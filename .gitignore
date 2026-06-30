@@ -1,0 +1,6 @@
+# Sadece VALOHELL oyun dosyalarini yayinla; klasordeki diger her seyi yoksay
+/*
+!/valorant.html
+!/logos/
+!/README.md
+!/.gitignore
