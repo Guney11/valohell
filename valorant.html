@@ -122,7 +122,6 @@
   .chip{font-family:var(--cond);font-size:12px;letter-spacing:.5px;background:var(--inset);border:1px solid var(--line);padding:3px 9px;border-radius:2px;color:var(--muted)}
   .links{display:flex;gap:6px;flex-wrap:wrap}
   .chem-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#06251c;background:var(--teal);padding:4px 11px;border-radius:2px}
-  .chem-badge.warn{background:var(--gold);color:#3a2c00}
   /* STRATEGY */
   .sidebanner{font-family:var(--cond);text-align:center;font-weight:700;letter-spacing:1px;background:linear-gradient(180deg,var(--panel),var(--bg2));
     border:1px solid var(--line);border-left:3px solid var(--red);border-radius:2px;padding:12px;margin-bottom:16px}
@@ -566,8 +565,7 @@ function chemLinks(cand,sel){
   const ctry=sel.filter(p=>p.c===cand.c).length;
   const present=new Set(sel.map(p=>p.r)), target=state.teamSize>=5?4:3;
   const newRole=!present.has(cand.r)&&present.size<target;
-  const overStack=sel.filter(p=>p.r===cand.r).length>=2;
-  return {org,ctry,newRole,overStack,positive:(org>0||ctry>0||newRole)};
+  return {org,ctry,newRole,positive:(org>0||ctry>0||newRole)};
 }
 function buildTeam(players,name,neutral){
   const list=players.map(p=>({...p,sub:subStats(p),k:0,d:0,a:0}));
@@ -661,9 +659,7 @@ function renderCandidate(){
   if(cl){
     if(cl.positive){
       const rs=[]; if(cl.org>0)rs.push('aynı takım'); if(cl.ctry>0)rs.push('aynı ülke'); if(cl.newRole)rs.push('rol dengesi');
-      chemHtml=`<div style="margin-top:10px"><span class="chem-badge">✓ KİMYA</span> <span class="note" style="font-size:12px">${rs.join(' · ')}${cl.overStack?' · <span style="color:var(--gold)">rol fazlası</span>':''}</span></div>`;
-    } else if(cl.overStack){
-      chemHtml=`<div style="margin-top:10px"><span class="chem-badge warn">⚠ ROL FAZLASI</span></div>`;
+      chemHtml=`<div style="margin-top:10px"><span class="chem-badge">✓ KİMYA</span> <span class="note" style="font-size:12px">${rs.join(' · ')}</span></div>`;
     } else {
       chemHtml=`<div style="margin-top:10px" class="note">— kimya bağı yok</div>`;
     }
