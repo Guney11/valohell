@@ -971,13 +971,19 @@ function sideStrat(t,side){let s=0;
   if(side==='attack'){if(t.focus==='plant')s+=0.02;if(t.focus==='kill')s-=0.01;if(t.entry==='aggressive')s+=0.02;if(t.entry==='calm')s-=0.01;}
   else{if(t.focus==='kill')s+=0.02;if(t.focus==='plant')s-=0.01;if(t.entry==='calm')s+=0.02;if(t.entry==='aggressive')s-=0.01;}
   return s;}
-function simMatch(A,B,tA,tB){
+function simRounds(A,B,tA,tB,startR,endR,carry){   // startR..endR arasi el; carry=devam durumu (2. yari icin)
   const size=A.players.length;
-  const Ap=A.players.map(p=>({...p,k:0,d:0,a:0})),Bp=B.players.map(p=>({...p,k:0,d:0,a:0}));
-  let score=[0,0],rounds=[],pM=800,bM=800,pL=0,bL=0,pW=false,bW=false,r=0;
+  let Ap,Bp,score,pM,bM,pL,bL,pW,bW;
+  if(carry){score=carry.score.slice();pM=carry.pM;bM=carry.bM;pL=carry.pL;bL=carry.bL;pW=carry.pW;bW=carry.bW;
+    Ap=A.players.map((p,i)=>({...p,k:carry.Ap[i].k,d:carry.Ap[i].d,a:carry.Ap[i].a}));
+    Bp=B.players.map((p,i)=>({...p,k:carry.Bp[i].k,d:carry.Bp[i].d,a:carry.Bp[i].a}));
+  }else{score=[0,0];pM=800;bM=800;pL=0;bL=0;pW=false;bW=false;
+    Ap=A.players.map(p=>({...p,k:0,d:0,a:0}));Bp=B.players.map(p=>({...p,k:0,d:0,a:0}));}
+  let rounds=[];
   const ended=()=>{const p=score[0],b=score[1];if(p>=13&&p-b>=2)return 'a';if(b>=13&&b-p>=2)return 'b';return null;};
-  while(!ended()&&r<200){
-    r++;const side=currentSideForRound(r);
+  for(let r=startR;r<=endR;r++){
+    if(ended())break;
+    const side=currentSideForRound(r);
     if(r===1||r===13){pM=800;bM=800;} if(r>=25){pM=5000;bM=5000;}
     const pB=decideBuy(tA.spend,pM,pW),bB=decideBuy(tB.spend,bM,bW);
     pM=Math.max(0,pM-pB.cost);bM=Math.max(0,bM-bB.cost);
@@ -1008,17 +1014,32 @@ function simMatch(A,B,tA,tB){
     pW=won;bW=!won;
     rounds.push({pWon:won,side,sa:score[0],sb:score[1]});
   }
-  return {rounds,score,Ap,Bp,winner:ended()};
+  const outCarry={score:score.slice(),pM,bM,pL,bL,pW,bW,Ap:Ap.map(p=>({k:p.k,d:p.d,a:p.a})),Bp:Bp.map(p=>({k:p.k,d:p.d,a:p.a}))};
+  return {rounds,winner:ended(),carry:outCarry,Ap,Bp};
 }
 function serializeBoard(t,pl){return {name:t.name,tag:t.tag,chem:t.chem.meter,ovr:t.ovr,players:pl.map(p=>({n:p.n,r:p.r,c:p.c,ovr:p.ovr,k:p.k,d:p.d,a:p.a}))};}
 function pairUp(list){const l=shuffle(list),pairs=[],byes=[];for(let i=0;i+1<l.length;i+=2)pairs.push([l[i],l[i+1]]);if(l.length%2)byes.push(l[l.length-1]);return {pairs,byes};}
-async function buildMatch(pair){
+async function buildMatch(pair){   // 1. yari (1-12. el) + devam durumu
   const [a,b]=pair;
   const {data:ps}=await sb.from('room_players').select('name,team,tactics').eq('room_code',room.code).in('name',[a,b]);
   const pa=ps.find(x=>x.name===a),pb=ps.find(x=>x.name===b);
   const A=buildTeam(pa.team,a,false),B=buildTeam(pb.team,b,false);
-  const s=simMatch(A,B,pa.tactics,pb.tactics);
-  return {id:'m'+Date.now()+'_'+Math.floor(Math.random()*9999),a,b,boardA:serializeBoard(A,s.Ap),boardB:serializeBoard(B,s.Bp),rounds:s.rounds,score:s.score,winner:s.winner==='a'?a:b};
+  const s=simRounds(A,B,pa.tactics,pb.tactics,1,12,null);
+  return {id:'m'+Date.now()+'_'+Math.floor(Math.random()*9999),a,b,ta:pa.tactics,tb:pb.tactics,half:1,
+    boardA:serializeBoard(A,s.Ap),boardB:serializeBoard(B,s.Bp),rounds:s.rounds,score:s.carry.score,carry:s.carry};
+}
+async function continueMatch(){   // 2. yari (13. el -> son), devre arasi taktikleriyle (host)
+  clearTimeout(state._htFb);
+  const st=room.data&&room.data.state,cm=st&&st.currentMatch;
+  if(!cm||cm.half!==1||room._cont===cm.id)return; room._cont=cm.id;
+  const {data:ps}=await sb.from('room_players').select('name,team,t2').eq('room_code',room.code).in('name',[cm.a,cm.b]);
+  const pa=ps.find(x=>x.name===cm.a),pb=ps.find(x=>x.name===cm.b);
+  const A=buildTeam(pa.team,cm.a,false),B=buildTeam(pb.team,cm.b,false);
+  const ta2=(pa.t2&&pa.t2.mid===cm.id&&pa.t2.tactics)||cm.ta;
+  const tb2=(pb.t2&&pb.t2.mid===cm.id&&pb.t2.tactics)||cm.tb;
+  const s=simRounds(A,B,ta2,tb2,13,200,cm.carry);
+  const full=Object.assign({},cm,{half:2,rounds2:s.rounds,boardA:serializeBoard(A,s.Ap),boardB:serializeBoard(B,s.Bp),score:s.carry.score,winner:s.winner==='a'?cm.a:cm.b});
+  await pushRoom({state:{phase:'bracket',bracket:st.bracket,currentMatch:full}});
 }
 async function startBracket(ps){
   if(room._bs)return;room._bs=true;
@@ -1038,26 +1059,58 @@ async function advanceBracket(){
   const cm3=await buildMatch(pu.pairs[0]);
   await pushRoom({state:{phase:'bracket',bracket:nbr,currentMatch:cm3}});
 }
-function watchMatch(r){ const m=r.state&&r.state.currentMatch; if(!m||room._pmId===m.id)return; room._pmId=m.id; playbackMP(m); }
+function watchMatch(r){ const m=r.state&&r.state.currentMatch; if(!m)return; const key=m.id+'_'+(m.half||1); if(room._pmId===key)return; room._pmId=key; playbackMP(m); }
 function playbackMP(m){
   clearTimeout(state.timer);clearInterval(state.dtInt);
   const mine=(m.a===room.me||m.b===room.me);
-  $('m-mpinfo').style.display=''; $('m-mpinfo').textContent=mine?'⚔️ SENİN MAÇIN — '+m.a+' vs '+m.b:'👁 İZLİYORSUN — '+m.a+' vs '+m.b;
+  $('m-mpinfo').style.display=''; $('m-mpinfo').innerHTML=(mine?'⚔️ SENİN MAÇIN':'👁 İZLİYORSUN')+' — '+m.a+' vs '+m.b+' <span style="color:var(--muted)">· '+(m.half===2?'2. yarı':'1. yarı')+'</span>';
   $('m-pname').innerHTML=logoChip(m.boardA.tag,colorFor(m.a))+' '+m.a;
   $('m-bname').innerHTML=m.b+' '+logoChip(m.boardB.tag,colorFor(m.b));
-  $('m-psc').textContent='0';$('m-bsc').textContent='0';$('m-feed').innerHTML='';$('m-timeline').innerHTML='';$('m-buy').textContent='';$('m-pmoney').textContent='-';$('m-bmoney').textContent='-';
+  $('m-buy').textContent='';$('m-pmoney').textContent='-';$('m-bmoney').textContent='-';
   show('s-match');
+  let rounds,startIdx;
+  if(m.half===2){
+    $('m-timeline').innerHTML=m.rounds.map((rd,idx)=>'<i class="'+(rd.pWon?'pw':'bw')+(idx===11?' half':'')+'"></i>').join('');
+    const last=m.rounds[m.rounds.length-1]; $('m-psc').textContent=last?last.sa:'0'; $('m-bsc').textContent=last?last.sb:'0';
+    $('m-feed').innerHTML=''; rounds=m.rounds2||[]; startIdx=m.rounds.length;
+  }else{
+    $('m-psc').textContent='0';$('m-bsc').textContent='0';$('m-feed').innerHTML='';$('m-timeline').innerHTML=''; rounds=m.rounds||[]; startIdx=0;
+  }
   let i=0;
   function step(){
-    if(i>=m.rounds.length)return endPlayback(m);
-    const rd=m.rounds[i];i++;
+    if(i>=rounds.length) return (m.half===2?endPlayback(m):halftimePause(m));
+    const rd=rounds[i]; const rn=startIdx+i+1; i++;
     $('m-psc').textContent=rd.sa;$('m-bsc').textContent=rd.sb;
-    $('m-side').textContent=i+'. EL · '+m.a+' '+(rd.side==='attack'?'SALDIRI':'SAVUNMA');
-    $('m-timeline').innerHTML+='<i class="'+(rd.pWon?'pw':'bw')+(i===12?' half':'')+'"></i>';
-    $('m-feed').insertAdjacentHTML('afterbegin','<div>R'+i+' · <b>'+(rd.pWon?m.a:m.b)+'</b> aldı <span style="float:right">'+rd.sa+'-'+rd.sb+'</span></div>');
+    $('m-side').textContent=rn+'. EL · '+m.a+' '+(rd.side==='attack'?'SALDIRI':'SAVUNMA');
+    $('m-timeline').innerHTML+='<i class="'+(rd.pWon?'pw':'bw')+(rn===12?' half':'')+'"></i>';
+    $('m-feed').insertAdjacentHTML('afterbegin','<div>R'+rn+' · <b>'+(rd.pWon?m.a:m.b)+'</b> aldı <span style="float:right">'+rd.sa+'-'+rd.sb+'</span></div>');
     state.timer=setTimeout(step,360);
   }
   state.timer=setTimeout(step,600);
+}
+function halftimePause(m){   // 1. yari bitti: kapisanlar strateji verir, izleyiciler bekler
+  const mine=(m.a===room.me||m.b===room.me);
+  if(mine){ state._htMatch=m; goHalftimeMP(m, m.a===room.me?'defense':'attack'); }
+  else { $('m-mpinfo').innerHTML='⏸ <b>DEVRE ARASI</b> · 2. YARI BAŞLAYACAK — oyuncular strateji belirliyor...'; }
+  if(room.isHost){ const mid=m.id; clearTimeout(state._htFb);
+    state._htFb=setTimeout(()=>{ const c=room.data&&room.data.state&&room.data.state.currentMatch; if(c&&c.id===mid&&c.half===1) continueMatch(); }, (((room.data&&room.data.select_time)||30)+12)*1000); }
+}
+function goHalftimeMP(m,side){
+  renderSeg('style','seg-style');renderSeg('focus','seg-focus');renderSeg('entry','seg-entry');renderSeg('spend','seg-spend');
+  $('strat-banner').innerHTML='<div class="sc">'+m.score[0]+' : '+m.score[1]+'</div><small>DEVRE ARASI · ARTIK '+(side==='attack'?'SALDIRIDASIN':'SAVUNMADASIN')+'</small>';
+  $('strat-timer').style.display=''; $('strat-go').disabled=false; $('strat-go').textContent='Devam →'; $('strat-go').setAttribute('onclick','saveHalftimeMP()');
+  startHalftimeTimer((room.data&&room.data.select_time)||30); show('s-strat');
+}
+function startHalftimeTimer(sec){
+  clearInterval(state.dtInt); state.dtEnd=Date.now()+sec*1000;
+  const tick=()=>{ const left=Math.max(0,Math.ceil((state.dtEnd-Date.now())/1000)); const b=$('strat-timer'); if(b)b.textContent='⏱ '+left+' sn'; if(left<=0){ clearInterval(state.dtInt); saveHalftimeMP(); } };
+  tick(); state.dtInt=setInterval(tick,300);
+}
+async function saveHalftimeMP(){
+  const m=state._htMatch; if(!m||state._htSent===m.id)return; state._htSent=m.id;
+  clearInterval(state.dtInt); $('strat-timer').style.display='none';
+  await sb.from('room_players').update({t2:{mid:m.id,tactics:state.tactics}}).eq('room_code',room.code).eq('name',room.me);
+  $('m-mpinfo').innerHTML='✓ Hazırsın — 2. yarı için rakip bekleniyor...'; show('s-match');
 }
 function endPlayback(m){
   $('m-mpinfo').innerHTML='🏆 <b>'+m.winner+'</b> kazandı! '+m.score[0]+'-'+m.score[1]+(room.isHost?' · sıradaki geliyor...':' · bekle...');
@@ -1111,7 +1164,12 @@ async function onPlayers(){
   const st=room.data&&room.data.status;
   if(st==='lobby'){ refreshLobby(); return; }
   if(st==='draft'){ const {data:ps}=await sb.from('room_players').select('name,ready').eq('room_code',room.code);
-    renderWait(ps); if(room.isHost && ps.length>=2 && ps.every(p=>p.ready)) startBracket(ps); }
+    renderWait(ps); if(room.isHost && ps.length>=2 && ps.every(p=>p.ready)) startBracket(ps); return; }
+  if(st==='playing' && room.isHost){   // devre arasi: iki kapisan da 2. yari taktigini verdiyse devam
+    const cm=room.data.state&&room.data.state.currentMatch;
+    if(cm&&cm.half===1){ const {data:ps}=await sb.from('room_players').select('name,t2').eq('room_code',room.code).in('name',[cm.a,cm.b]);
+      if(ps&&ps.length===2&&ps.every(p=>p.t2&&p.t2.mid===cm.id)) continueMatch(); }
+  }
 }
 
 applyTheme();updateNewsDot();getAll(5);getAll(3);renderHomeLB();
