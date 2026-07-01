@@ -6,7 +6,7 @@
 <title>VALOHELL — Takım Simülatörü</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,600&family=Teko:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Teko:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --page-bg:#0f1923; --bg2:#131e28; --panel:#16212c; --panel2:#1e2a36;
@@ -201,95 +201,73 @@
   #news-overlay{position:fixed;inset:0;z-index:100;display:none;align-items:flex-start;justify-content:center;padding:30px 14px;
     overflow-y:auto;background:rgba(6,10,14,.74);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
   #news-overlay.open{display:flex;animation:fade .3s ease}
-  .gz{--ink:#211b12;--rule:#c7b896;--pred:#8f2c22;--sub:#6d6250;position:relative;width:100%;max-width:840px;color:var(--ink);
-    font-family:Georgia,'Times New Roman',serif;padding:32px 36px 24px;border:1px solid #b6a582;box-shadow:0 34px 90px -24px rgba(0,0,0,.85);
-    background-color:#f4ecd8;
-    background-image:radial-gradient(circle at 12% 10%,rgba(120,90,40,.05),transparent 42%),
-                     radial-gradient(circle at 88% 90%,rgba(120,90,40,.05),transparent 42%),
-                     repeating-linear-gradient(0deg,rgba(60,45,20,.02) 0 2px,transparent 2px 4px)}
-  .gz-close{position:absolute;top:12px;right:12px;width:34px;height:34px;border:1px solid var(--ink);background:transparent;color:var(--ink);
-    font-size:15px;cursor:pointer;border-radius:2px;font-family:var(--cond)}
-  .gz-close:hover{background:var(--ink);color:#f4ecd8}
-  .gz-eyebrow{text-align:center;font-family:var(--cond);letter-spacing:5px;font-size:11px;color:var(--pred);font-weight:700;text-transform:uppercase}
-  .gz-masthead{font-family:'Playfair Display',Georgia,serif;font-weight:900;text-align:center;font-size:clamp(38px,7.5vw,66px);line-height:1;letter-spacing:1px;margin:5px 0 8px}
-  .gz-masthead span{color:var(--pred)}
-  .gz-meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-family:var(--cond);text-transform:uppercase;letter-spacing:1.5px;
-    font-size:11px;color:var(--sub);font-weight:600;padding:6px 2px;border-top:2px solid var(--ink);border-bottom:1px solid var(--ink)}
-  #gz-date{text-transform:none;letter-spacing:.6px}
-  .gz-cols{display:grid;grid-template-columns:1.12fr 1fr;gap:30px;margin-top:20px}
-  .gz-col.gz-updates{border-left:1px solid var(--rule);padding-left:30px}
-  .gz-kicker{font-family:var(--cond);text-transform:uppercase;letter-spacing:3px;font-size:13px;font-weight:700;color:var(--pred);
-    border-bottom:2px solid var(--ink);padding-bottom:5px;margin-bottom:13px}
-  .gz-head{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:26px;line-height:1.1;margin-bottom:3px}
-  .gz-byline{font-family:var(--cond);text-transform:uppercase;letter-spacing:1.5px;font-size:10px;color:var(--sub);margin-bottom:9px}
-  .gz-body{font-size:14.5px;line-height:1.62;text-align:justify}
-  .gz-drop{float:left;font-family:'Playfair Display',Georgia,serif;font-weight:900;font-size:52px;line-height:.72;padding:6px 9px 0 0;color:var(--pred)}
-  .gz-item{margin-top:15px;padding-top:12px;border-top:1px solid #dccdae}
-  .gz-item h4{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:17px;margin-bottom:3px}
-  .gz-item p{font-size:13.5px;line-height:1.55;color:#352e22}
-  .gz-ver{font-family:var(--cond);font-weight:700;letter-spacing:1px;text-transform:uppercase;font-size:13px;margin:14px 0 5px;color:var(--ink)}
-  .gz-log .gz-ver:first-child{margin-top:0}
-  .gz-log ul{list-style:none;margin:0;padding:0}
-  .gz-log li{font-size:13px;line-height:1.5;padding:6px 0;border-bottom:1px dotted var(--rule);display:flex;gap:8px;align-items:flex-start}
-  .gz-log li:last-child{border-bottom:none}
-  .tg{flex:0 0 auto;font-family:var(--cond);font-weight:700;font-size:9.5px;letter-spacing:.5px;padding:2px 6px;border-radius:2px;text-transform:uppercase;color:#fff;margin-top:1px}
-  .tg.new{background:#2f7d4f}.tg.fix{background:#2a5f9e}.tg.imp{background:#b5852a}.tg.rem{background:#9e3630}
-  .gz-foot{text-align:center;font-family:var(--cond);text-transform:uppercase;letter-spacing:2px;font-size:10px;color:var(--sub);
-    border-top:1px solid var(--ink);margin-top:18px;padding-top:10px}
-  @media(max-width:640px){.gz{padding:26px 20px 20px}.gz-cols{grid-template-columns:1fr;gap:18px}
-    .gz-col.gz-updates{border-left:none;padding-left:0;border-top:2px solid var(--ink);padding-top:16px}}
+  .nw{position:relative;width:100%;max-width:720px;background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);
+    border-top:1px solid var(--edge);border-radius:4px;padding:24px 26px;box-shadow:0 30px 80px -26px rgba(0,0,0,.8);color:var(--txt)}
+  .nw-close{position:absolute;top:12px;right:12px;width:32px;height:32px;border:1px solid var(--line);background:transparent;color:var(--muted);
+    font-size:14px;cursor:pointer;border-radius:2px;font-family:var(--cond)}
+  .nw-close:hover{border-color:var(--red);color:var(--red)}
+  .nw-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:18px}
+  .nw-title{font-family:var(--disp);font-weight:700;font-size:28px;letter-spacing:1px;line-height:1}
+  .nw-title span{color:var(--red)}
+  .nw-ver{font-family:var(--cond);font-weight:600;font-size:12px;letter-spacing:1px;color:var(--muted);text-transform:uppercase}
+  .nw-cols{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+  .nw-kicker{font-family:var(--cond);text-transform:uppercase;letter-spacing:2px;font-size:12px;font-weight:700;color:var(--red);margin-bottom:12px}
+  .nw-item{margin-bottom:13px}
+  .nw-item h4{font-family:var(--cond);font-weight:700;font-size:15px;margin-bottom:2px}
+  .nw-item p{font-size:13px;line-height:1.5;color:var(--muted)}
+  .nw-ver-row{font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin:14px 0 5px}
+  .nw-ver-row:first-child{margin-top:0}
+  .nw-log{list-style:none;margin:0;padding:0}
+  .nw-log li{font-size:13px;line-height:1.55;padding:5px 0;border-bottom:1px solid var(--edge)}
+  .nw-log li:last-child{border-bottom:none}
+  .tg{display:inline-block;font-family:var(--cond);font-weight:700;font-size:10px;letter-spacing:.5px;padding:1px 7px;border-radius:2px;color:#fff;margin-right:7px}
+  .tg.new{background:#2f7d4f}.tg.imp{background:#b5852a}.tg.fix{background:#2a5f9e}.tg.rem{background:#9e3630}
+  @media(max-width:600px){.nw{padding:22px 18px}.nw-cols{grid-template-columns:1fr;gap:16px}}
 </style>
 </head>
 <body>
 <button id="theme-btn" onclick="toggleTheme()" title="Tema değiştir">🌙</button>
 <button id="news-btn" onclick="openNews()" title="Yakında & Güncellemeler">📰 <span>YAKINDA</span><i id="news-dot"></i></button>
 
-<!-- YAKINDA / GAZETE -->
+<!-- YAKINDA & GUNCELLEMELER -->
 <div id="news-overlay" onclick="if(event.target===this)closeNews()">
-  <div class="gz" role="dialog" aria-modal="true" aria-label="VALOHELL Gazetesi">
-    <button class="gz-close" onclick="closeNews()" aria-label="Kapat">✕</button>
-    <div class="gz-eyebrow">SON DAKİKA · SAHADAN BİLDİRİLİYOR</div>
-    <div class="gz-masthead">VALO<span>HELL</span> GAZETESİ</div>
-    <div class="gz-meta"><span>SAYI 04</span><span id="gz-date">—</span><span>FİYATI: 1 CLUTCH</span></div>
-    <div class="gz-cols">
-      <section class="gz-col">
-        <div class="gz-kicker">YAKINDA GELİYOR</div>
-        <article>
-          <h2 class="gz-head">Lig Sistemi Sahaya İniyor</h2>
-          <div class="gz-byline">GELİŞTİRME MASASI · ÖZEL HABER</div>
-          <p class="gz-body"><span class="gz-drop">H</span>esabını aç, kullanıcı adın ve şifrenle her cihazdan gir. Kazandıkça puan topla; Demir'den Radiant'a uzanan rütbe basamaklarını Valorant misali tırman. Sezonlar, yerleştirme maçları ve yükselme–düşme yolda — namağlup kalan zirveye oynar.</p>
-        </article>
-        <div class="gz-item"><h4>Kullanıcı Adı & Şifre</h4><p>Kişisel profil, buluta kayıtlı istatistikler ve maç geçmişi. Cihaz fark etmez, puanların seni takip eder.</p></div>
-        <div class="gz-item"><h4>Rütbeler & Sezonlar</h4><p>Demir, Bronz, Gümüş… ta ki Radiant'a. Her sezon sıralama sıfırlanır, zirve için yeniden yarış başlar.</p></div>
-        <div class="gz-item"><h4>Ses & Animasyon Turu</h4><p>Tur geçişleri, skor efektleri ve maç atmosferi için kapsamlı bir cila turu planda.</p></div>
+  <div class="nw" role="dialog" aria-modal="true" aria-label="Yakında ve Güncellemeler">
+    <button class="nw-close" onclick="closeNews()" aria-label="Kapat">✕</button>
+    <div class="nw-head">
+      <div class="nw-title">VALO<span>HELL</span></div>
+      <div class="nw-ver">Sürüm 0.4</div>
+    </div>
+    <div class="nw-cols">
+      <section>
+        <div class="nw-kicker">Yakında</div>
+        <div class="nw-item"><h4>Lig sistemi</h4><p>Kullanıcı adı ve şifreyle giriş, puan toplama, Demir'den Radiant'a rütbeler ve sezonlar.</p></div>
+        <div class="nw-item"><h4>Hesapla giriş</h4><p>Buluta kayıtlı profil, istatistik ve maç geçmişi — her cihazdan aynı hesap.</p></div>
+        <div class="nw-item"><h4>Ses & animasyon</h4><p>Tur geçişleri, skor efektleri ve maç atmosferi için cila turu.</p></div>
       </section>
-      <section class="gz-col gz-updates">
-        <div class="gz-kicker">SON GÜNCELLEMELER</div>
-        <div class="gz-log">
-          <div class="gz-ver">V0.4 — TEMMUZ 2026</div>
-          <ul>
-            <li><b class="tg new">YENİ</b><span>Arkadaşlarla <b>kupa modu</b>: oda kodu, 10 kişiye kadar tek eleme, canlı izleme ve şampiyonluk.</span></li>
-            <li><b class="tg imp">İYİLEŞTİRME</b><span>Baştan sona <b>görsel yenileme</b> — Valorant temalı arayüz, yeni tipografi, HUD skor tablosu.</span></li>
-            <li><b class="tg new">YENİ</b><span>Koyu tema artık <b>varsayılan</b>; sağ üstten ışık/karanlık geçişi.</span></li>
-            <li><b class="tg rem">KALDIRILDI</b><span>Oda kurarken oyuncu-sayısı seçimi; kapasite artık sabit (maks 10).</span></li>
-          </ul>
-          <div class="gz-ver">V0.3</div>
-          <ul>
-            <li><b class="tg new">YENİ</b><span><b>20 takım, 100 oyuncu</b> — güncel vlr.gg kadroları ve gerçek takım logoları.</span></li>
-            <li><b class="tg imp">İYİLEŞTİRME</b><span>Veri-temelli oyuncu güçleri (Rating 2.0) ve takım/ülke kimya sistemi.</span></li>
-          </ul>
-          <div class="gz-ver">V0.2</div>
-          <ul>
-            <li><b class="tg new">YENİ</b><span>Ekonomi, strateji panosu, MVP/SVP ve lider tabloları (3v3 &amp; 5v5).</span></li>
-          </ul>
-          <div class="gz-ver">V0.1</div>
-          <ul>
-            <li><b class="tg new">YENİ</b><span>İlk sürüm — botlara karşı tur-tur maç simülasyonu.</span></li>
-          </ul>
-        </div>
+      <section>
+        <div class="nw-kicker">Güncellemeler</div>
+        <div class="nw-ver-row">v0.4</div>
+        <ul class="nw-log">
+          <li><b class="tg new">Yeni</b>Arkadaşlarla kupa modu — oda kodu, 10 kişiye kadar, canlı izleme.</li>
+          <li><b class="tg imp">İyileştirme</b>Valorant temalı görsel yenileme ve yeni tipografi.</li>
+          <li><b class="tg new">Yeni</b>Koyu tema varsayılan; sağ üstten değiştirilir.</li>
+          <li><b class="tg rem">Kaldırıldı</b>Oda kurarken oyuncu-sayısı seçimi (kapasite sabit 10).</li>
+        </ul>
+        <div class="nw-ver-row">v0.3</div>
+        <ul class="nw-log">
+          <li><b class="tg new">Yeni</b>20 takım, 100 oyuncu — güncel kadrolar ve gerçek logolar.</li>
+          <li><b class="tg imp">İyileştirme</b>Veri-temelli oyuncu güçleri ve kimya sistemi.</li>
+        </ul>
+        <div class="nw-ver-row">v0.2</div>
+        <ul class="nw-log">
+          <li><b class="tg new">Yeni</b>Ekonomi, strateji, MVP/SVP ve lider tabloları.</li>
+        </ul>
+        <div class="nw-ver-row">v0.1</div>
+        <ul class="nw-log">
+          <li><b class="tg new">Yeni</b>İlk sürüm — botlara karşı maç simülasyonu.</li>
+        </ul>
       </section>
     </div>
-    <div class="gz-foot">VALOHELL · NAMAĞLUP ŞAMPİYON OLABİLECEK MİSİN? · ÖNERİLER İÇİN GERİ BİLDİRİM YAKINDA</div>
   </div>
 </div>
 <div id="app">
@@ -551,10 +529,9 @@ function toggleTheme(){const cur=localStorage.getItem('val_theme')||'dark';
 const NEWS_VER='v0.4';
 function updateNewsDot(){const d=$('news-dot');if(d)d.style.display=(localStorage.getItem('val_news_seen')===NEWS_VER)?'none':'inline-block';}
 function openNews(){
-  try{$('gz-date').textContent=new Date().toLocaleDateString('tr-TR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});}catch(e){}
   localStorage.setItem('val_news_seen',NEWS_VER);updateNewsDot();
   $('news-overlay').classList.add('open');document.addEventListener('keydown',newsEsc);
-  setTimeout(()=>{try{document.querySelector('.gz-close').focus();}catch(e){}},50);
+  setTimeout(()=>{try{document.querySelector('.nw-close').focus();}catch(e){}},50);
 }
 function closeNews(){$('news-overlay').classList.remove('open');document.removeEventListener('keydown',newsEsc);}
 function newsEsc(e){if(e.key==='Escape')closeNews();}
