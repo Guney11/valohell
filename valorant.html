@@ -23,6 +23,7 @@
     --inset:#eeeae1; --out:rgba(0,0,0,0.5); --red-deep:#ffb3ba; --glow:rgba(255,70,85,.28);
   }
   *{box-sizing:border-box;margin:0;padding:0}
+  html{overflow-anchor:none}   /* icerik buyuyunce sayfa kendiliginden kaymasin */
   body{font-family:var(--body);background:var(--page-bg);color:var(--txt);min-height:100vh;
     display:flex;align-items:flex-start;justify-content:center;padding:28px 14px;position:relative;overflow-x:hidden;
     transition:background .3s,color .3s;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
@@ -620,8 +621,10 @@ function changeClass(){           // takım aynı, sınıf değişir
 }
 function lockCandidate(){
   if(!state.candidate)return;
+  const sy=window.pageYOffset;
   state.selected.push(state.candidate);state.candidate=null;
   drawCandidate();renderBuilder();
+  window.scrollTo(0,sy);   // secince sayfa asagi kaymasin
 }
 function removePlayer(n){
   state.selected=state.selected.filter(p=>p.n!==n);
