@@ -208,6 +208,29 @@
       <div class="note mt" id="lobby-hint"></div></div>
   </section>
 
+  <!-- MP WAIT -->
+  <section id="s-mpwait" class="screen">
+    <div class="topbar"><div class="home" onclick="leaveRoom()">VALO<span>HELL</span></div>
+      <button class="btn ghost" onclick="leaveRoom()">← Çık</button></div>
+    <div class="center" style="padding-top:20px">
+      <h2>Hazırsın ✓</h2>
+      <p class="note">Diğer oyuncular kadrosunu kuruyor...</p>
+      <div style="font-size:30px;font-weight:900" id="wait-count">-</div>
+      <div class="note">oyuncu hazır</div>
+    </div>
+  </section>
+
+  <!-- CHAMPION -->
+  <section id="s-champion" class="screen">
+    <div class="center" style="padding-top:30px">
+      <div style="font-size:64px">🏆</div>
+      <div style="font-size:14px;color:var(--muted);letter-spacing:3px">ŞAMPİYON</div>
+      <div id="champ-name" style="font-size:42px;font-weight:900;color:var(--gold);margin:8px 0"></div>
+      <div id="champ-bracket" class="note" style="line-height:1.8"></div>
+      <button class="btn mt" onclick="leaveRoom()">Bitir</button>
+    </div>
+  </section>
+
   <!-- SETUP -->
   <section id="s-setup" class="screen">
     <div class="topbar"><div class="home" onclick="show('s-landing')">VALO<span>HELL</span></div></div>
@@ -226,6 +249,7 @@
   <section id="s-builder" class="screen">
     <div class="topbar"><div class="home" onclick="show('s-landing')">VALO<span>HELL</span></div>
       <button class="btn ghost" onclick="resetBuilder()">↺ Baştan</button></div>
+    <div id="draft-timer" style="display:none;text-align:center;font-weight:900;color:var(--red);font-size:18px;margin-bottom:8px"></div>
     <div class="between"><h2>Kadronu Seç <span id="b-count" style="color:var(--muted);font-weight:400">0/5</span></h2>
       <div style="text-align:right"><div style="font-size:11px;color:var(--muted)">TAKIM GÜCÜ</div>
         <div style="font-size:26px;font-weight:900" id="b-ovr">—</div></div></div>
@@ -251,6 +275,7 @@
   <section id="s-strat" class="screen">
     <div class="topbar"><div class="home" onclick="show('s-landing')">VALO<span>HELL</span></div></div>
     <div class="sidebanner" id="strat-banner"></div>
+    <div id="strat-timer" style="display:none;text-align:center;font-weight:900;color:var(--red);font-size:18px;margin-bottom:10px"></div>
     <div class="card">
       <div class="dial"><div class="t">⚔️ Oyun Tarzı</div><div class="seg" id="seg-style"></div></div>
       <div class="dial"><div class="t">🎯 Odak: Plant & Kill</div><div class="seg" id="seg-focus"></div></div>
@@ -262,6 +287,7 @@
 
   <!-- MATCH -->
   <section id="s-match" class="screen">
+    <div id="m-mpinfo" style="display:none;text-align:center;font-weight:800;color:var(--teal);margin-bottom:8px"></div>
     <div class="scorebar">
       <div class="tm p" id="m-pname">SEN</div>
       <div class="sc p" id="m-psc">0</div>
@@ -410,7 +436,7 @@ const state={teamSize:5,username:'',selected:[],teamReroll:3,classReroll:3,candi
   rounds:[],speed:1,timer:null,halftimeDone:false,matchOver:false,pBuyTier:''};
 
 /* ============================== SETUP ============================== */
-function startOnline(){show('s-setup');}
+function startOnline(){state.mp=false;state.mpDrafting=false;show('s-setup');}
 function pickSize(v,el){el.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));el.classList.add('on');state.teamSize=v;}
 function confirmSetup(){ resetBuilder();show('s-builder'); }   // isim sonda sorulur
 
@@ -485,6 +511,7 @@ function renderCandidate(){
 }
 function confirmBuilder(){
   if(state.selected.length!==state.teamSize)return;
+  if(state.mp){ goStrategy(false); return; }
   state.pTeam=buildTeam(state.selected.slice(),'SİZ',false);
   state.bTeam=genBotTeam(state.teamSize,new Set(state.selected.map(p=>p.n)));
   goStrategy(false);
@@ -505,6 +532,12 @@ function setTactic(key,val,el){state.tactics[key]=val;
   el.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));el.classList.add('on');}
 function goStrategy(isHalftime){
   renderSeg('style','seg-style');renderSeg('focus','seg-focus');renderSeg('entry','seg-entry');renderSeg('spend','seg-spend');
+  if(state.mp){
+    $('strat-banner').innerHTML='<small>TAKTİĞİNİ SEÇ · Hazır olunca rakip beklenir</small>';
+    $('strat-timer').style.display='';
+    $('strat-go').textContent='Hazır ✓';$('strat-go').setAttribute('onclick','saveReady()');
+    show('s-strat'); return;
+  }
   if(isHalftime){
     $('strat-banner').innerHTML=`<div class="sc">${state.score[0]} : ${state.score[1]}</div>
       <small>DEVRE ARASI · ARTIK ${currentSideForRound(13)==='attack'?'SALDIRIDASIN':'SAVUNMADASIN'}</small>`;
@@ -733,8 +766,8 @@ function enterLobby(){ subscribeRoom(); show('s-lobby'); refreshLobby(); }
 function subscribeRoom(){
   if(room.chan) sb.removeChannel(room.chan);
   room.chan=sb.channel('room-'+room.code)
-    .on('postgres_changes',{event:'*',schema:'public',table:'room_players',filter:'room_code=eq.'+room.code},refreshLobby)
-    .on('postgres_changes',{event:'*',schema:'public',table:'rooms',filter:'code=eq.'+room.code},refreshLobby)
+    .on('postgres_changes',{event:'*',schema:'public',table:'room_players',filter:'room_code=eq.'+room.code},onPlayers)
+    .on('postgres_changes',{event:'*',schema:'public',table:'rooms',filter:'code=eq.'+room.code},onRoomChange)
     .subscribe();
 }
 async function refreshLobby(){
@@ -751,12 +784,161 @@ async function refreshLobby(){
   else { b.style.display='none'; $('lobby-hint').textContent='Host başlatmayı bekliyor...'; }
   if(r.status!=='lobby' && !room._started){ room._started=true; alert('🎮 Oyun başlıyor! (Faz 2b: senkron kadro + maç bir sonraki adımda geliyor. Lobi & realtime çalışıyor.)'); }
 }
-async function startRoomMatch(){ if(!room.isHost)return; await sb.from('rooms').update({status:'drafting'}).eq('code',room.code); }
-function leaveRoomLocal(){ if(room.chan)sb.removeChannel(room.chan); room={code:null,isHost:false,me:null,chan:null,data:null,_started:false}; show('s-landing'); }
+async function startRoomMatch(){ if(!room.isHost)return; await pushRoom({status:'draft',state:{phase:'draft'}}); }
+function leaveRoomLocal(){ if(room.chan)sb.removeChannel(room.chan); clearInterval(state.dtInt);clearTimeout(state.timer);state.mp=false;state.mpDrafting=false;state._ready=false; room={code:null,isHost:false,me:null,chan:null,data:null,_started:false}; show('s-landing'); }
 async function leaveRoom(){
   const r=room; if(r.chan)sb.removeChannel(r.chan);
   if(r.code&&r.me&&sb){ try{ await sb.from('room_players').delete().eq('room_code',r.code).eq('name',r.me); if(r.isHost) await sb.from('rooms').delete().eq('code',r.code);}catch(e){} }
+  clearInterval(state.dtInt);clearTimeout(state.timer);state.mp=false;state.mpDrafting=false;state._ready=false;
   room={code:null,isHost:false,me:null,chan:null,data:null,_started:false}; show('s-landing');
+}
+
+/* ============================== FAZ 2b: DRAFT + KUPA + SENKRON MAÇ ============================== */
+function sideStrat(t,side){let s=0;
+  if(side==='attack'){if(t.focus==='plant')s+=0.02;if(t.focus==='kill')s-=0.01;if(t.entry==='aggressive')s+=0.02;if(t.entry==='calm')s-=0.01;}
+  else{if(t.focus==='kill')s+=0.02;if(t.focus==='plant')s-=0.01;if(t.entry==='calm')s+=0.02;if(t.entry==='aggressive')s-=0.01;}
+  return s;}
+function simMatch(A,B,tA,tB){
+  const size=A.players.length;
+  const Ap=A.players.map(p=>({...p,k:0,d:0,a:0})),Bp=B.players.map(p=>({...p,k:0,d:0,a:0}));
+  let score=[0,0],rounds=[],pM=800,bM=800,pL=0,bL=0,pW=false,bW=false,r=0;
+  const ended=()=>{const p=score[0],b=score[1];if(p>=13&&p-b>=2)return 'a';if(b>=13&&b-p>=2)return 'b';return null;};
+  while(!ended()&&r<200){
+    r++;const side=currentSideForRound(r);
+    if(r===1||r===13){pM=800;bM=800;} if(r>=25){pM=5000;bM=5000;}
+    const pB=decideBuy(tA.spend,pM,pW),bB=decideBuy(tB.spend,bM,bW);
+    pM=Math.max(0,pM-pB.cost);bM=Math.max(0,bM-bB.cost);
+    let strat=0;
+    if(beats(tA.style,tB.style))strat+=0.05;else if(beats(tB.style,tA.style))strat-=0.05;
+    strat+=sideStrat(tA,side)-sideStrat(tB,side==='attack'?'defense':'attack');
+    strat=clamp(strat,-CFG.STRAT_CAP,CFG.STRAT_CAP);
+    let role=0;
+    if(tA.focus==='kill')role+=0.02*clamp((A.avgAim-B.avgAim)/15,-1,1);
+    if(tA.focus==='plant')role+=0.02*clamp((A.avgSense-B.avgSense)/15,-1,1);
+    if(tB.focus==='kill')role-=0.02*clamp((B.avgAim-A.avgAim)/15,-1,1);
+    if(tB.focus==='plant')role-=0.02*clamp((B.avgSense-A.avgSense)/15,-1,1);
+    role=clamp(role,-CFG.ROLE_CAP,CFG.ROLE_CAP);
+    const chemT=((A.chem.meter-B.chem.meter)/10)*CFG.CHEM_COEF;
+    const evar=tA.entry==='aggressive'?1.3:tA.entry==='calm'?0.8:1.0;
+    const noise=rand(-CFG.NOISE,CFG.NOISE)*evar;
+    let pA=0.5+(A.skill-B.skill)*CFG.SKILL_SLOPE+(pB.mult-bB.mult)*CFG.ECO_SLOPE+chemT+strat+role+noise;
+    pA=clamp(pA,CFG.P_MIN,CFG.P_MAX);
+    const won=Math.random()<pA;if(won)score[0]++;else score[1]++;
+    const margin=clamp(Math.abs(pA-0.5)*2,0,1);
+    let wK=clamp(Math.round(size*(0.55+0.4*margin))+randint(-1,1),1,size);
+    let lK=clamp(Math.round((size-1)*(1-margin)*0.7)+randint(-1,1),0,size-1);
+    const W=won?Ap:Bp,L=won?Bp:Ap;
+    distributeKills(W,wK);distributeKills(L,lK);distributeDeaths(W,lK);distributeDeaths(L,wK);
+    distributeAssists(W,Math.round(wK*0.4));distributeAssists(L,Math.round(lK*0.4));
+    if(won){pM=Math.min(9000,pM+3000);pL=0;bL++;bM=Math.min(9000,bM+(bL>=3?2900:bL===2?2400:1900));}
+    else{bM=Math.min(9000,bM+3000);bL=0;pL++;pM=Math.min(9000,pM+(pL>=3?2900:pL===2?2400:1900));}
+    pW=won;bW=!won;
+    rounds.push({pWon:won,side,sa:score[0],sb:score[1]});
+  }
+  return {rounds,score,Ap,Bp,winner:ended()};
+}
+function serializeBoard(t,pl){return {name:t.name,tag:t.tag,chem:t.chem.meter,ovr:t.ovr,players:pl.map(p=>({n:p.n,r:p.r,c:p.c,ovr:p.ovr,k:p.k,d:p.d,a:p.a}))};}
+function pairUp(list){const l=shuffle(list),pairs=[],byes=[];for(let i=0;i+1<l.length;i+=2)pairs.push([l[i],l[i+1]]);if(l.length%2)byes.push(l[l.length-1]);return {pairs,byes};}
+async function buildMatch(pair){
+  const [a,b]=pair;
+  const {data:ps}=await sb.from('room_players').select('name,team,tactics').eq('room_code',room.code).in('name',[a,b]);
+  const pa=ps.find(x=>x.name===a),pb=ps.find(x=>x.name===b);
+  const A=buildTeam(pa.team,a,false),B=buildTeam(pb.team,b,false);
+  const s=simMatch(A,B,pa.tactics,pb.tactics);
+  return {id:'m'+Date.now()+'_'+Math.floor(Math.random()*9999),a,b,boardA:serializeBoard(A,s.Ap),boardB:serializeBoard(B,s.Bp),rounds:s.rounds,score:s.score,winner:s.winner==='a'?a:b};
+}
+async function startBracket(ps){
+  if(room._bs)return;room._bs=true;
+  const pu=pairUp(ps.map(p=>p.name));
+  const bracket={round:1,pairs:pu.pairs,byes:pu.byes,mi:0,winners:[],log:[]};
+  const cm=await buildMatch(pu.pairs[0]);
+  await pushRoom({status:'playing',state:{phase:'bracket',bracket,currentMatch:cm}});
+}
+async function advanceBracket(){
+  const st=room.data.state,br=st.bracket,cm=st.currentMatch;
+  br.winners.push(cm.winner);br.log.push('R'+br.round+': '+cm.a+' '+cm.score[0]+'-'+cm.score[1]+' '+cm.b+' → '+cm.winner);br.mi++;
+  if(br.mi<br.pairs.length){ const cm2=await buildMatch(br.pairs[br.mi]); await pushRoom({state:{phase:'bracket',bracket:br,currentMatch:cm2}}); return; }
+  const alive=br.winners.concat(br.byes);
+  if(alive.length===1){ await pushRoom({status:'done',state:{phase:'done',bracket:br,champion:alive[0]}}); return; }
+  const pu=pairUp(alive);
+  const nbr={round:br.round+1,pairs:pu.pairs,byes:pu.byes,mi:0,winners:[],log:br.log};
+  const cm3=await buildMatch(pu.pairs[0]);
+  await pushRoom({state:{phase:'bracket',bracket:nbr,currentMatch:cm3}});
+}
+function watchMatch(r){ const m=r.state&&r.state.currentMatch; if(!m||room._pmId===m.id)return; room._pmId=m.id; playbackMP(m); }
+function playbackMP(m){
+  clearTimeout(state.timer);clearInterval(state.dtInt);
+  const mine=(m.a===room.me||m.b===room.me);
+  $('m-mpinfo').style.display=''; $('m-mpinfo').textContent=mine?'⚔️ SENİN MAÇIN — '+m.a+' vs '+m.b:'👁 İZLİYORSUN — '+m.a+' vs '+m.b;
+  $('m-pname').innerHTML=logoChip(m.boardA.tag,colorFor(m.a))+' '+m.a;
+  $('m-bname').innerHTML=m.b+' '+logoChip(m.boardB.tag,colorFor(m.b));
+  $('m-psc').textContent='0';$('m-bsc').textContent='0';$('m-feed').innerHTML='';$('m-timeline').innerHTML='';$('m-buy').textContent='';$('m-pmoney').textContent='-';$('m-bmoney').textContent='-';
+  show('s-match');
+  let i=0;
+  function step(){
+    if(i>=m.rounds.length)return endPlayback(m);
+    const rd=m.rounds[i];i++;
+    $('m-psc').textContent=rd.sa;$('m-bsc').textContent=rd.sb;
+    $('m-side').textContent=i+'. EL · '+m.a+' '+(rd.side==='attack'?'SALDIRI':'SAVUNMA');
+    $('m-timeline').innerHTML+='<i class="'+(rd.pWon?'pw':'bw')+(i===12?' half':'')+'"></i>';
+    $('m-feed').insertAdjacentHTML('afterbegin','<div>R'+i+' · <b>'+(rd.pWon?m.a:m.b)+'</b> aldı <span style="float:right">'+rd.sa+'-'+rd.sb+'</span></div>');
+    state.timer=setTimeout(step,360);
+  }
+  state.timer=setTimeout(step,600);
+}
+function endPlayback(m){
+  $('m-mpinfo').innerHTML='🏆 <b>'+m.winner+'</b> kazandı! '+m.score[0]+'-'+m.score[1]+(room.isHost?' · sıradaki geliyor...':' · bekle...');
+  if(room.isHost) setTimeout(()=>{ if(room.data&&room.data.status==='playing') advanceBracket(); },4200);
+}
+function showChampion(name){
+  clearTimeout(state.timer);
+  $('champ-name').textContent=name||'?';
+  const log=(room.data&&room.data.state&&room.data.state.bracket&&room.data.state.bracket.log)||[];
+  $('champ-bracket').innerHTML=log.map(l=>'<div>'+l+'</div>').join('');
+  show('s-champion');
+}
+function enterDraft(r){
+  state.mp=true;state.mpDrafting=true;state._ready=false;
+  state.teamSize=r.team_size; state.tactics={style:'normal',focus:'balanced',entry:'normal',spend:'normal'};
+  resetBuilder(); show('s-builder'); $('draft-timer').style.display='';
+  startDraftTimer(r.select_time||30);
+}
+function startDraftTimer(sec){
+  clearInterval(state.dtInt); state.dtEnd=Date.now()+sec*1000;
+  const tick=()=>{ const left=Math.max(0,Math.ceil((state.dtEnd-Date.now())/1000));
+    const a=$('draft-timer'),b=$('strat-timer'); if(a)a.textContent='⏱ '+left+' sn'; if(b)b.textContent='⏱ '+left+' sn';
+    if(left<=0){ clearInterval(state.dtInt); autoReady(); } };
+  tick(); state.dtInt=setInterval(tick,300);
+}
+function autoReady(){ if(!state._ready) saveReady(); }
+async function saveReady(){
+  if(state._ready)return; state._ready=true;
+  clearInterval(state.dtInt); $('draft-timer').style.display='none'; $('strat-timer').style.display='none';
+  const names=new Set(state.selected.map(p=>p.n)), pool=shuffle(ROSTER.filter(p=>!names.has(p.n)));
+  while(state.selected.length<state.teamSize&&pool.length)state.selected.push(pool.pop());
+  const team=state.selected.slice(0,state.teamSize).map(p=>({n:p.n,r:p.r,c:p.c,ovr:p.ovr,o:p.o}));
+  await sb.from('room_players').update({team,tactics:state.tactics,ready:true}).eq('room_code',room.code).eq('name',room.me);
+  show('s-mpwait'); renderWait();
+}
+async function renderWait(ps){
+  if(!ps){ const q=await sb.from('room_players').select('name,ready').eq('room_code',room.code); ps=q.data||[]; }
+  $('wait-count').textContent=ps.filter(p=>p.ready).length+'/'+ps.length;
+}
+function onRoom(r){
+  if(!r){ if(!room.isHost)alert('Oda kapandı.'); return leaveRoomLocal(); }
+  room.data=r;
+  if(r.status==='lobby') refreshLobby();
+  else if(r.status==='draft'){ if(!state.mpDrafting) enterDraft(r); }
+  else if(r.status==='playing') watchMatch(r);
+  else if(r.status==='done') showChampion(r.state&&r.state.champion);
+}
+async function onRoomChange(){ if(!room.code||!sb)return; const {data:r}=await sb.from('rooms').select('*').eq('code',room.code).maybeSingle(); onRoom(r); }
+async function pushRoom(patch){ await sb.from('rooms').update(patch).eq('code',room.code); onRoomChange(); }
+async function onPlayers(){
+  const st=room.data&&room.data.status;
+  if(st==='lobby'){ refreshLobby(); return; }
+  if(st==='draft'){ const {data:ps}=await sb.from('room_players').select('name,ready').eq('room_code',room.code);
+    renderWait(ps); if(room.isHost && ps.length>=2 && ps.every(p=>p.ready)) startBracket(ps); }
 }
 
 applyTheme();getAll(5);getAll(3);renderHomeLB();
