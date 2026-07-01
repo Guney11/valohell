@@ -123,6 +123,13 @@
   .chip{font-family:var(--cond);font-size:12px;letter-spacing:.5px;background:var(--inset);border:1px solid var(--line);padding:3px 9px;border-radius:2px;color:var(--muted)}
   .links{display:flex;gap:6px;flex-wrap:wrap}
   .chem-badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--cond);font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#06251c;background:var(--teal);padding:4px 11px;border-radius:2px}
+  .tp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:8px;margin-top:12px}
+  .tp{border:1px solid var(--line);border-radius:3px;padding:10px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;transition:.12s;background:var(--inset)}
+  .tp:hover{border-color:var(--red);transform:translateY(-1px)}
+  .tp.sel{border-color:var(--red);box-shadow:inset 0 0 0 1px var(--red);background:#80808018}
+  .tp-logo{height:30px;width:auto;max-width:62px;object-fit:contain}
+  .tp-fallback{width:30px;height:30px;border-radius:4px;align-items:center;justify-content:center;color:#fff;font-family:var(--cond);font-weight:700;font-size:11px}
+  .tp-name{font-family:var(--cond);font-size:11px;color:var(--muted);letter-spacing:.5px}
   /* STRATEGY */
   .sidebanner{font-family:var(--cond);text-align:center;font-weight:700;letter-spacing:1px;background:linear-gradient(180deg,var(--panel),var(--bg2));
     border:1px solid var(--line);border-left:3px solid var(--red);border-radius:2px;padding:12px;margin-bottom:16px}
@@ -402,6 +409,10 @@
         <button class="btn" onclick="lockCandidate()">✓ Seç</button>
       </div>
     </div>
+    <div class="card mt" id="b-teampick" style="display:none">
+      <div style="font-family:var(--cond);font-weight:700;font-size:16px;letter-spacing:.5px">🛡️ Takımını Seç <span class="note" style="font-weight:400;font-size:12px">— sadece logo/kimlik, oyuna etkisi yok</span></div>
+      <div class="tp-grid" id="tp-grid"></div>
+    </div>
     <div class="center mt"><button class="btn" id="b-go" onclick="confirmBuilder()" disabled>Stratejini Kur →</button></div>
   </section>
 
@@ -596,7 +607,7 @@ function confirmSetup(){ resetBuilder();show('s-builder'); }   // isim sonda sor
 
 /* ============================== TAKIM KURUCU (reroll sistemi) ============================== */
 function resetBuilder(){
-  state.selected=[];state.teamReroll=3;state.classReroll=3;state.candidate=null;
+  state.selected=[];state.teamReroll=3;state.classReroll=3;state.candidate=null;state.teamOrg=null;
   drawCandidate();renderBuilder();
 }
 function drawCandidate(){
@@ -651,7 +662,8 @@ function renderBuilder(){
     $('b-links').innerHTML=links.length?links.map(l=>`<span class="chip">${l}</span>`).join(''):'<span class="chip">bağ yok</span>';
   }else{$('b-chem').textContent='0';$('b-bar').style.width='0%';$('b-ovr').textContent='—';$('b-links').innerHTML='';}
   renderCandidate();
-  $('b-go').disabled=state.selected.length!==size;
+  renderTeamPick();
+  $('b-go').disabled=state.selected.length!==size||!state.teamOrg;
 }
 function renderCandidate(){
   const p=state.candidate;
@@ -676,10 +688,22 @@ function renderCandidate(){
   $('b-team').textContent=`🔄 Takım Değiştir (${state.teamReroll})`;$('b-team').disabled=state.teamReroll<=0;
   $('b-class').textContent=`🔄 Sınıf Değiştir (${state.classReroll})`;$('b-class').disabled=state.classReroll<=0;
 }
+function renderTeamPick(){   // kadro tamamlaninca takim kimligi/logosu sec (kozmetik)
+  const wrap=$('b-teampick'); if(!wrap)return;
+  const done=state.selected.length===state.teamSize;
+  wrap.style.display=done?'':'none';
+  if(!done){ state.teamOrg=null; return; }
+  $('tp-grid').innerHTML=Object.keys(TEAMS).map(org=>
+    `<div class="tp ${state.teamOrg===org?'sel':''}" onclick="pickTeamOrg('${org}')" title="${org}">
+       <img class="tp-logo" src="logos/${org}.png" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+       <span class="tp-fallback" style="display:none;background:${colorFor(org)}">${org}</span>
+       <span class="tp-name">${org}</span></div>`).join('');
+}
+function pickTeamOrg(org){ state.teamOrg=org; renderTeamPick(); $('b-go').disabled=state.selected.length!==state.teamSize||!state.teamOrg; }
 function confirmBuilder(){
-  if(state.selected.length!==state.teamSize)return;
+  if(state.selected.length!==state.teamSize||!state.teamOrg)return;
   if(state.mp){ goStrategy(false); return; }
-  state.pTeam=buildTeam(state.selected.slice(),'SİZ',false);
+  state.pTeam=buildTeam(state.selected.slice(),state.teamOrg,false);
   state.bTeam=genBotTeam(state.teamSize,new Set(state.selected.map(p=>p.n)));
   goStrategy(false);
 }
@@ -1020,9 +1044,10 @@ function serializeBoard(t,pl){return {name:t.name,tag:t.tag,chem:t.chem.meter,ov
 function pairUp(list){const l=shuffle(list),pairs=[],byes=[];for(let i=0;i+1<l.length;i+=2)pairs.push([l[i],l[i+1]]);if(l.length%2)byes.push(l[l.length-1]);return {pairs,byes};}
 async function buildMatch(pair){   // 1. yari (1-12. el) + devam durumu
   const [a,b]=pair;
-  const {data:ps}=await sb.from('room_players').select('name,team,tactics').eq('room_code',room.code).in('name',[a,b]);
+  const {data:ps}=await sb.from('room_players').select('name,team,tactics,org').eq('room_code',room.code).in('name',[a,b]);
   const pa=ps.find(x=>x.name===a),pb=ps.find(x=>x.name===b);
   const A=buildTeam(pa.team,a,false),B=buildTeam(pb.team,b,false);
+  if(pa.org)A.tag=pa.org; if(pb.org)B.tag=pb.org;
   const s=simRounds(A,B,pa.tactics,pb.tactics,1,12,null);
   return {id:'m'+Date.now()+'_'+Math.floor(Math.random()*9999),a,b,ta:pa.tactics,tb:pb.tactics,half:1,
     boardA:serializeBoard(A,s.Ap),boardB:serializeBoard(B,s.Bp),rounds:s.rounds,score:s.carry.score,carry:s.carry};
@@ -1031,9 +1056,10 @@ async function continueMatch(){   // 2. yari (13. el -> son), devre arasi taktik
   clearTimeout(state._htFb);
   const st=room.data&&room.data.state,cm=st&&st.currentMatch;
   if(!cm||cm.half!==1||room._cont===cm.id)return; room._cont=cm.id;
-  const {data:ps}=await sb.from('room_players').select('name,team,t2').eq('room_code',room.code).in('name',[cm.a,cm.b]);
+  const {data:ps}=await sb.from('room_players').select('name,team,t2,org').eq('room_code',room.code).in('name',[cm.a,cm.b]);
   const pa=ps.find(x=>x.name===cm.a),pb=ps.find(x=>x.name===cm.b);
   const A=buildTeam(pa.team,cm.a,false),B=buildTeam(pb.team,cm.b,false);
+  if(pa.org)A.tag=pa.org; if(pb.org)B.tag=pb.org;
   const ta2=(pa.t2&&pa.t2.mid===cm.id&&pa.t2.tactics)||cm.ta;
   const tb2=(pb.t2&&pb.t2.mid===cm.id&&pb.t2.tactics)||cm.tb;
   const s=simRounds(A,B,ta2,tb2,13,200,cm.carry);
@@ -1142,7 +1168,8 @@ async function saveReady(){
   const names=new Set(state.selected.map(p=>p.n)), pool=shuffle(ROSTER.filter(p=>!names.has(p.n)));
   while(state.selected.length<state.teamSize&&pool.length)state.selected.push(pool.pop());
   const team=state.selected.slice(0,state.teamSize).map(p=>({n:p.n,r:p.r,c:p.c,ovr:p.ovr,o:p.o}));
-  await sb.from('room_players').update({team,tactics:state.tactics,ready:true}).eq('room_code',room.code).eq('name',room.me);
+  const org=state.teamOrg||pick(Object.keys(TEAMS));
+  await sb.from('room_players').update({team,tactics:state.tactics,org,ready:true}).eq('room_code',room.code).eq('name',room.me);
   show('s-mpwait'); renderWait();
 }
 async function renderWait(ps){
