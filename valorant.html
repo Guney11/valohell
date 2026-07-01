@@ -152,8 +152,8 @@
         <div class="big">ONLINE</div>
         <div class="desc">Kadronu kur, taktiğini belirle, sıralama için savaş. Lider tablosuna tırman.</div>
       </div>
-      <div class="mode locked" onclick="alert('Local mod (5 haneli oda kodu, telefon+PC) Faz 2 — yakında 🔒')">
-        <div class="tag">YAKINDA · FAZ 2</div>
+      <div class="mode" onclick="startLocal()">
+        <div class="tag">ARKADAŞLARLA</div>
         <div class="big">LOCAL</div>
         <div class="desc">Oda kur, 5 haneli kodu paylaş, arkadaşlarınla kapış.</div>
       </div>
@@ -170,6 +170,42 @@
         <div id="h3-body"></div>
       </div>
     </div>
+  </section>
+
+  <!-- LOCAL MENU -->
+  <section id="s-local" class="screen">
+    <div class="topbar"><div class="home" onclick="show('s-landing')">VALO<span>HELL</span></div></div>
+    <h2 class="center">Local — Arkadaşlarla</h2>
+    <div class="row" style="justify-content:center;gap:16px;align-items:stretch;margin-top:16px">
+      <div class="card" style="flex:1;min-width:250px;max-width:320px">
+        <h3>🏠 Oda Kur</h3>
+        <label class="fld">Adın</label><input type="text" id="lc-name" maxlength="14">
+        <label class="fld">Takım boyutu</label><div class="seg" id="lc-size"></div>
+        <label class="fld">Seçim süresi</label><div class="seg" id="lc-time"></div>
+        <div class="center mt"><button class="btn" onclick="createRoom()">Oda Kur →</button></div>
+      </div>
+      <div class="card" style="flex:1;min-width:250px;max-width:320px">
+        <h3>🔑 Odaya Katıl</h3>
+        <label class="fld">Adın</label><input type="text" id="lj-name" maxlength="14">
+        <label class="fld">Oda kodu</label><input type="text" id="lj-code" maxlength="5" placeholder="5 haneli kod">
+        <div class="center mt"><button class="btn" onclick="joinRoom()">Katıl →</button></div>
+      </div>
+    </div>
+    <div class="center mt note" id="local-msg" style="min-height:18px"></div>
+  </section>
+
+  <!-- LOBBY -->
+  <section id="s-lobby" class="screen">
+    <div class="topbar"><div class="home" onclick="leaveRoom()">VALO<span>HELL</span></div>
+      <button class="btn ghost" onclick="leaveRoom()">← Odadan Çık</button></div>
+    <div class="center">
+      <div class="note">ODA KODU (arkadaşına ver)</div>
+      <div id="lobby-code" style="font-size:44px;font-weight:900;letter-spacing:8px;color:var(--red)">-----</div>
+    </div>
+    <div class="card mt"><div style="font-weight:800;margin-bottom:6px">Oyuncular (<span id="lobby-count">0</span>/<span id="lobby-max">2</span>)</div>
+      <div id="lobby-players"></div></div>
+    <div class="center mt"><button class="btn" id="lobby-start" onclick="startRoomMatch()" disabled>Başlat</button>
+      <div class="note mt" id="lobby-hint"></div></div>
   </section>
 
   <!-- SETUP -->
@@ -272,6 +308,7 @@
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ============================== VERİ: KADRO ============================== */
 // Guncel kadrolar + veri-temelli gucler (vlr.gg Rating 2.0, rol duzeltmeli) - 2026
@@ -656,6 +693,72 @@ function renderHomeLB(){
 }
 
 /* ============================== BAŞLAT ============================== */
+/* ============================== LOCAL (Faz 2 — Supabase realtime) ============================== */
+const SB_URL='https://wcfwvjpxmowwdookyzwk.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjZnd2anB4bW93d2Rvb2t5endrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4ODU5NTYsImV4cCI6MjA5ODQ2MTk1Nn0.QP7fznw_XVVriK-qZ6TgF5pRUm-aZDQl0PUJ-2d64F0';
+const sb = window.supabase ? window.supabase.createClient(SB_URL,SB_KEY) : null;
+let lset={size:5,time:30};
+let room={code:null,isHost:false,me:null,chan:null,data:null,_started:false};
+function startLocal(){ if(!sb){alert('Local mod için internet gerekli.');return;} lseg(); $('lc-name').value='';$('lj-name').value='';$('lj-code').value='';$('local-msg').textContent=''; show('s-local'); }
+function lseg(){
+  $('lc-size').innerHTML=[[5,'5v5'],[3,'3v3']].map(a=>`<button class="${lset.size===a[0]?'on':''}" onclick="lset.size=${a[0]};lseg()">${a[1]}</button>`).join('');
+  $('lc-time').innerHTML=[15,30,45,60].map(v=>`<button class="${lset.time===v?'on':''}" onclick="lset.time=${v};lseg()">${v}sn</button>`).join('');
+}
+function genCode(){return String(Math.floor(10000+Math.random()*90000));}
+async function createRoom(){
+  const name=$('lc-name').value.trim(); if(!name)return alert('Adını gir.');
+  $('local-msg').textContent='Oda kuruluyor...';
+  let code='';
+  for(let i=0;i<6;i++){ code=genCode(); const {data}=await sb.from('rooms').select('code').eq('code',code); if(!data||!data.length)break; }
+  const {error}=await sb.from('rooms').insert({code,host:name,team_size:lset.size,select_time:lset.time,max_players:2,status:'lobby'});
+  if(error){$('local-msg').textContent='Hata: '+error.message;return;}
+  await sb.from('room_players').insert({room_code:code,name,is_host:true});
+  room={code,isHost:true,me:name,chan:null,data:null,_started:false}; $('local-msg').textContent=''; enterLobby();
+}
+async function joinRoom(){
+  const name=$('lj-name').value.trim(), code=$('lj-code').value.trim();
+  if(!name||!code)return alert('Ad ve oda kodu gir.');
+  $('local-msg').textContent='Katılınıyor...';
+  const {data:r}=await sb.from('rooms').select('*').eq('code',code).maybeSingle();
+  if(!r){$('local-msg').textContent='Oda bulunamadı.';return;}
+  if(r.status!=='lobby'){$('local-msg').textContent='Oyun çoktan başlamış.';return;}
+  const {data:ps}=await sb.from('room_players').select('name').eq('room_code',code);
+  if(ps&&ps.length>=r.max_players){$('local-msg').textContent='Oda dolu.';return;}
+  if(ps&&ps.find(p=>p.name===name)){$('local-msg').textContent='Bu isim odada var, başka seç.';return;}
+  const {error}=await sb.from('room_players').insert({room_code:code,name,is_host:false});
+  if(error){$('local-msg').textContent='Hata: '+error.message;return;}
+  room={code,isHost:false,me:name,chan:null,data:null,_started:false}; $('local-msg').textContent=''; enterLobby();
+}
+function enterLobby(){ subscribeRoom(); show('s-lobby'); refreshLobby(); }
+function subscribeRoom(){
+  if(room.chan) sb.removeChannel(room.chan);
+  room.chan=sb.channel('room-'+room.code)
+    .on('postgres_changes',{event:'*',schema:'public',table:'room_players',filter:'room_code=eq.'+room.code},refreshLobby)
+    .on('postgres_changes',{event:'*',schema:'public',table:'rooms',filter:'code=eq.'+room.code},refreshLobby)
+    .subscribe();
+}
+async function refreshLobby(){
+  if(!room.code||!sb)return;
+  const {data:r}=await sb.from('rooms').select('*').eq('code',room.code).maybeSingle();
+  if(!r){ if(!room.isHost)alert('Oda kapandı.'); return leaveRoomLocal(); }
+  room.data=r; state.teamSize=r.team_size;
+  const {data:ps}=await sb.from('room_players').select('*').eq('room_code',room.code).order('joined_at');
+  const list=ps||[];
+  $('lobby-code').textContent=r.code; $('lobby-max').textContent=r.max_players; $('lobby-count').textContent=list.length;
+  $('lobby-players').innerHTML=list.map(p=>`<div style="padding:7px 0;border-bottom:1px solid var(--line)">${p.is_host?'👑 ':'👤 '}<b>${p.name}</b>${p.name===room.me?' <span style="color:var(--teal)">(sen)</span>':''}</div>`).join('');
+  const b=$('lobby-start');
+  if(room.isHost){ b.style.display=''; b.disabled=list.length<2; $('lobby-hint').textContent=list.length<2?'En az 2 oyuncu bekleniyor...':'Herkes geldi, başlatabilirsin!'; }
+  else { b.style.display='none'; $('lobby-hint').textContent='Host başlatmayı bekliyor...'; }
+  if(r.status!=='lobby' && !room._started){ room._started=true; alert('🎮 Oyun başlıyor! (Faz 2b: senkron kadro + maç bir sonraki adımda geliyor. Lobi & realtime çalışıyor.)'); }
+}
+async function startRoomMatch(){ if(!room.isHost)return; await sb.from('rooms').update({status:'drafting'}).eq('code',room.code); }
+function leaveRoomLocal(){ if(room.chan)sb.removeChannel(room.chan); room={code:null,isHost:false,me:null,chan:null,data:null,_started:false}; show('s-landing'); }
+async function leaveRoom(){
+  const r=room; if(r.chan)sb.removeChannel(r.chan);
+  if(r.code&&r.me&&sb){ try{ await sb.from('room_players').delete().eq('room_code',r.code).eq('name',r.me); if(r.isHost) await sb.from('rooms').delete().eq('code',r.code);}catch(e){} }
+  room={code:null,isHost:false,me:null,chan:null,data:null,_started:false}; show('s-landing');
+}
+
 applyTheme();getAll(5);getAll(3);renderHomeLB();
 </script>
 </body>
