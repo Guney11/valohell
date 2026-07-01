@@ -274,24 +274,32 @@
 
 <script>
 /* ============================== VERİ: KADRO ============================== */
-// Güncel kadrolar — vlr.gg üzerinden doğrulandı (2026)
+// Guncel kadrolar + veri-temelli gucler (vlr.gg Rating 2.0, rol duzeltmeli) - 2026
 const TEAMS = {
-  SEN:  [["johnqt","Initiator","MA",92],["Reduxx","Controller","US",88],["cortezia","Sentinel","BR",85],["JonahP","Initiator","CA",84],["Jerrwin","Duelist","CA",84]],
-  LOUD: [["cauanzin","Initiator","BR",88],["lukxo","Sentinel","BR",85],["Darker","Initiator","CO",84],["Virtyy","Duelist","DO",84],["erde","Controller","CL",82]],
-  FNC:  [["Alfajer","Duelist","TR",93],["crashies","Initiator","US",88],["kaajak","Duelist","PL",85],["Boaster","Controller","GB",85],["Cloud","Sentinel","RU",84]],
-  PRX:  [["something","Duelist","RU",93],["f0rsakeN","Controller","ID",93],["Jinggg","Duelist","SG",89],["d4v41","Sentinel","MY",85],["invy","Initiator","PH",84]],
-  NRG:  [["Ethan","Initiator","US",92],["keiko","Duelist","GB",88],["mada","Duelist","CA",85],["skuba","Sentinel","US",84],["brawk","Controller","US",84]],
-  EDG:  [["ZmjjKK","Duelist","CN",92],["nobody","Initiator","CN",85],["Smoggy","Controller","CN",85],["CHICHOO","Sentinel","CN",84],["Jieni7","Initiator","CN",82]],
-  DRX:  [["MaKo","Controller","KR",92],["BeYN","Initiator","KR",88],["HYUNMIN","Duelist","KR",84],["free1ng","Sentinel","KR",84],["yong","Duelist","KR",81]],
-  TL:   [["nAts","Sentinel","RU",92],["purp0","Duelist","RU",88],["kamo","Duelist","PL",84],["trexx","Initiator","RU",84],["Kicks","Controller","EE",84]],
-  EF:   [["Izzy","Duelist","TR",88],["nekky","Initiator","TR",85],["audaz","Controller","TR",84],["Favian","Duelist","TR",84],["echo","Sentinel","TR",83]],
-  KC:   [["SUYGETSU","Sentinel","RU",89],["Avez","Initiator","EG",88],["LewN","Duelist","TR",85],["dos9","Controller","KZ",85],["N4RRATE","Initiator","US",84]],
-  VIT:  [["Derke","Duelist","FI",93],["Chronicle","Initiator","RU",89],["PROFEK","Controller","PL",85],["Jamppi","Sentinel","FI",85],["Sayonara","Initiator","MD",81]],
-  T1:   [["BuZz","Duelist","KR",92],["stax","Initiator","KR",88],["Munchkin","Controller","KR",88],["Meteor","Sentinel","KR",88],["iZu","Duelist","KR",84]],
+  SEN: [["johnqt","Sentinel","MA",90],["cortezia","Sentinel","BR",89],["Reduxx","Controller","MA",88],["JonahP","Initiator","CA",82],["Jerrwin","Duelist","CA",78]],
+  LOUD: [["lukxo","Controller","BR",88],["erde","Controller","CL",85],["Darker","Sentinel","CO",84],["cauanzin","Initiator","BR",84],["Virtyy","Duelist","DO",80]],
+  FNC: [["Alfajer","Sentinel","TR",89],["kaajak","Duelist","PL",88],["Cloud","Initiator","RU",88],["crashies","Initiator","US",84],["Boaster","Controller","GB",82]],
+  PRX: [["something","Duelist","RU",92],["Jinggg","Duelist","SG",92],["invy","Initiator","PH",89],["f0rsakeN","Controller","ID",87],["d4v41","Sentinel","MY",86]],
+  NRG: [["keiko","Controller","GB",94],["skuba","Sentinel","US",87],["brawk","Initiator","US",81],["Ethan","Initiator","US",80],["mada","Duelist","CA",78]],
+  EDG: [["CHICHOO","Controller","CN",89],["ZmjjKK","Duelist","CN",88],["Smoggy","Duelist","CN",86],["nobody","Initiator","CN",85],["Jieni7","Sentinel","CN",82]],
+  DRX: [["MaKo","Controller","KR",91],["HYUNMIN","Duelist","KR",86],["BeYN","Initiator","KR",82],["yong","Sentinel","KR",80],["free1ng","Duelist","KR",78]],
+  TL: [["purp0","Duelist","RU",94],["trexx","Initiator","RU",93],["Kicks","Controller","EE",88],["nAts","Sentinel","RU",87],["kamo","Duelist","PL",86]],
+  EF: [["audaz","Controller","TR",88],["echo","Sentinel","TR",86],["Favian","Duelist","TR",84],["nekky","Initiator","TR",83],["Izzy","Duelist","TR",80]],
+  KC: [["dos9","Controller","KZ",91],["N4RRATE","Initiator","US",87],["LewN","Duelist","TR",86],["SUYGETSU","Sentinel","RU",86],["Avez","Initiator","EG",85]],
+  VIT: [["Derke","Duelist","FI",88],["Chronicle","Initiator","RU",87],["Sayonara","Sentinel","MD",85],["PROFEK","Controller","PL",84],["Jamppi","Initiator","FI",83]],
+  T1: [["Munchkin","Controller","KR",87],["Meteor","Sentinel","KR",86],["BuZz","Duelist","KR",85],["iZu","Initiator","KR",85],["stax","Initiator","KR",80]],
+  BBL: [["Crewen","Sentinel","TR",83],["Lar0k","Initiator","TR",80],["Loita","Controller","TR",80],["lovers rock","Duelist","TR",78],["Rosé","Initiator","TR",78]],
+  FUT: [["yetujey","Sentinel","TR",88],["s0pp","Duelist","TR",84],["KROSTALY","Initiator","TR",84],["sociablEE","Controller","TR",84],["xeus","Duelist","TR",81]],
+  G2: [["trent","Initiator","US",89],["valyn","Controller","US",88],["BABYBAY","Sentinel","US",87],["leaf","Duelist","US",82],["jawgemo","Duelist","US",80]],
+  "100T": [["bang","Controller","US",88],["Cryocells","Sentinel","US",88],["Asuna","Duelist","US",87],["vora","Initiator","CA",87],["Timotino","Duelist","CA",81]],
+  TH: [["RieNs","Initiator","TR",88],["benjyfishy","Sentinel","GB",86],["Wo0t","Duelist","TR",85],["Boo","Controller","LT",84],["koshmaras","Duelist","LT",81]],
+  GEN: [["Karon","Controller","KR",91],["ZynX","Sentinel","KR",82],["t3xture","Duelist","KR",81],["Ash","Duelist","KR",80],["Lakia","Initiator","KR",78]],
+  RRQ: [["Jemkin","Duelist","RU",93],["xffero","Controller","ID",91],["Monyet","Duelist","ID",84],["crazyguy","Initiator","VN",83],["Kushy","Initiator","ID",83]],
+  BLG: [["whzy","Duelist","CN",93],["nephh","Controller","SG",89],["Knight","Initiator","CN",85],["yilai","Sentinel","CN",82],["rushia","Controller","CN",80]],
 };
 const ROSTER=[];
 for(const org in TEAMS) for(const p of TEAMS[org]) ROSTER.push({n:p[0],r:p[1],c:p[2],ovr:p[3],o:org});
-const BOT_NAMES=["MIBR","GEN","100T","TH","FUT","GX","BBL","NAVI","C9","FUR","M8","APK","GIA","KOI"];
+const BOT_NAMES=["MIBR","GX","NAVI","C9","FUR","M8","KOI","EG","LEV","KRU","FPX","ZETA"];
 
 /* ============================== DENGE SABİTLERİ ============================== */
 // Etki ağırlıkları (maks katkılar oranı): Takım Gücü %45 · Strateji %25 · Kimya %15 · Ekonomi %10 · Şans %5
