@@ -892,11 +892,11 @@ function renderResultLB(){
 
 /* ============================== LİDER TABLOSU ============================== */
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
-const SEED=[["RadiantTR",845,38,7,3],["m1ko",640,31,9,0],["xeo",525,27,10,1],["pas1f1k",410,23,11,0],["bot_avcisi",320,20,12,2],["clutch_god",245,17,12,0],["aimbotTR",180,15,13,0],["smokesultani",130,13,13,1],["eko_kral",80,11,13,0],["pekiyi",45,9,12,0],["valoTR",25,7,10,0],["flickmachine",15,6,9,-2],["son_nefes",8,5,8,0],["nisanci",3,4,9,0],["yedek_kadro",0,3,11,-1]];
+const SEED=[];
 function mkSeed(n){return SEED.slice(0,n).map(([name,rating,w,l,streak])=>({name,rating,w,l,streak}));}
-function getAll(size){const k='val_lb3_'+size;let a=JSON.parse(localStorage.getItem(k)||'null');
+function getAll(size){const k='val_lb4_'+size;let a=JSON.parse(localStorage.getItem(k)||'null');
   if(!a){a=mkSeed(15);localStorage.setItem(k,JSON.stringify(a));}return a;}
-function getDaily(size){const k='val_lbd3_'+size;let o=JSON.parse(localStorage.getItem(k)||'null');
+function getDaily(size){const k='val_lbd4_'+size;let o=JSON.parse(localStorage.getItem(k)||'null');
   if(!o||o.day!==todayStr()){o={day:todayStr(),entries:mkSeed(6)};localStorage.setItem(k,JSON.stringify(o));}return o;}
 function bump(arr,won,diff){let me=arr.find(x=>x.name===state.username);
   if(!me){me={name:state.username,rating:0,w:0,l:0,streak:0};arr.push(me);}
@@ -905,8 +905,8 @@ function bump(arr,won,diff){let me=arr.find(x=>x.name===state.username);
   arr.sort((a,b)=>b.rating-a.rating);return {delta,me};
 }
 function updateLB(size,won,diff){
-  const all=getAll(size),r1=bump(all,won,diff);localStorage.setItem('val_lb3_'+size,JSON.stringify(all));
-  const d=getDaily(size),r2=bump(d.entries,won,diff);localStorage.setItem('val_lbd3_'+size,JSON.stringify(d));
+  const all=getAll(size),r1=bump(all,won,diff);localStorage.setItem('val_lb4_'+size,JSON.stringify(all));
+  const d=getDaily(size),r2=bump(d.entries,won,diff);localStorage.setItem('val_lbd4_'+size,JSON.stringify(d));
   return {rating:r1.me.rating,delta:r1.delta,w:r1.me.w,l:r1.me.l,streak:r1.me.streak};
 }
 const lbHome={p5:'all',p3:'all'};
