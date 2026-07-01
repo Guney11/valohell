@@ -827,7 +827,7 @@ function finishMatch(winner){
     </table>`;
   $('r-boards').innerHTML=`<div class="card">${board(state.pTeam)}${board(state.bTeam)}</div>`;
   state.lastWon=pWon;state.lastDiff=Math.abs(state.score[0]-state.score[1]);
-  $('r-mmr').textContent='';$('r-lb').innerHTML='';
+  $('r-mmr').textContent='';renderResultLB();
   $('r-namebox').style.display='';$('r-name').value=state.username||'';
   show('s-result');setTimeout(()=>{try{$('r-name').focus();}catch(e){}},60);
 }
