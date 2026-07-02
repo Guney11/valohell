@@ -425,10 +425,10 @@
         <div class="big">ONLINE</div>
         <div class="desc">Kadronu kur, taktiğini belirle, sıralama için savaş. Lider tablosuna tırman.</div>
       </div>
-      <div class="mode" onclick="startRanked()">
-        <div class="tag">1v1 REKABET</div>
+      <div class="mode locked" onclick="derecelSoon()">
+        <div class="tag">YAKINDA</div>
         <div class="big">DERECELİ</div>
-        <div class="desc">Rakip bul, maçı kazan, RR topla. Demir'den Radyant'a tırman — herkes Demir 1'den başlar.</div>
+        <div class="desc">Rakip bul, puan topla, Demir'den Radyant'a lig atla. Yeterli oyuncu olunca açılacak.</div>
       </div>
       <div class="mode" onclick="startLocal()">
         <div class="tag">ARKADAŞLARLA</div>
@@ -1403,6 +1403,7 @@ function rankOf(rr){                                   // tek kademeli lig: 100 
 }
 function rankBadge(rr,big){const r=rankOf(rr);return `<span class="rk${big?' big':''}" style="--rkc:${r.color}">${r.label}</span>`;}
 let rkInt=null,rkBusy=false;
+function derecelSoon(){ toast('🔒 Dereceli mod yakında — yeterli oyuncu olunca açılacak!'); }
 function startRanked(){
   if(!sb){alert('Dereceli için internet gerekli.');return;}
   if(!authUser||!state.username){openAuth('login');toast('Dereceli oynamak için önce giriş yap.');return;}
