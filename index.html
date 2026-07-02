@@ -36,14 +36,15 @@
     -webkit-mask-image:radial-gradient(circle at 50% 24%,#000,transparent 78%);
             mask-image:radial-gradient(circle at 50% 24%,#000,transparent 78%)}
   #app{position:relative;z-index:1;width:100%;max-width:1060px}
-  .screen{display:none;animation:fade .4s ease}
-  .screen.active{display:block}
+  .screen{display:none}
+  .screen.active{display:block;animation:scrIn .3s ease}
+  @keyframes scrIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   @keyframes pulse{0%,100%{text-shadow:0 0 24px var(--glow)}50%{text-shadow:0 0 42px var(--glow),0 0 10px var(--glow)}}
   h1,h2,h3{font-family:var(--cond);font-weight:700;letter-spacing:.5px;line-height:1.08}
   h2{font-size:27px} h3{font-size:19px}
   /* LOGO / HERO */
-  .logo{font-family:var(--disp);font-size:66px;font-weight:700;letter-spacing:4px;text-align:center;line-height:.9;color:var(--txt)}
+  .logo{font-family:var(--disp);font-size:66px;font-weight:700;letter-spacing:4px;text-align:center;line-height:.9;color:var(--txt);margin-top:14px}
   .logo span{color:var(--red);animation:pulse 3.6s ease-in-out infinite}
   .sub{font-family:var(--cond);text-align:center;color:var(--muted);margin:4px 0 32px;letter-spacing:2px;font-size:16px}
   /* BUTTONS */
@@ -56,7 +57,7 @@
   .btn.ghost{background:var(--panel);color:var(--txt);border:1px solid var(--line);border-bottom:1px solid var(--line)}
   .btn.ghost:hover{border-color:var(--red);background:var(--panel2);box-shadow:0 6px 16px -8px var(--glow)}
   .btn:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none;filter:grayscale(.3)}
-  #theme-btn{position:fixed;top:16px;right:16px;z-index:60;background:var(--panel);border:1px solid var(--line);
+  #theme-btn{background:var(--panel);border:1px solid var(--line);
     color:var(--txt);width:44px;height:44px;border-radius:2px;cursor:pointer;font-size:19px;transition:.15s}
   #theme-btn:hover{border-color:var(--red);color:var(--red)}
   /* CARDS */
@@ -196,16 +197,16 @@
   #b-ovr{font-family:var(--disp)}
   .feed::-webkit-scrollbar,.pool::-webkit-scrollbar{width:8px}
   .feed::-webkit-scrollbar-thumb,.pool::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px}
-  @media(max-width:560px){.scorebar .sc{font-size:46px}.logo{font-size:47px}.mode .big{font-size:31px}}
+  @media(max-width:560px){.scorebar .sc{font-size:46px}.logo{font-size:47px;margin-top:40px}.mode .big{font-size:31px}}
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
   /* ============ YAKINDA / GAZETE ============ */
-  #news-btn{position:fixed;top:16px;right:70px;z-index:61;height:44px;padding:0 14px;background:var(--panel);border:1px solid var(--line);
+  #news-btn{height:44px;padding:0 14px;background:var(--panel);border:1px solid var(--line);
     color:var(--txt);border-radius:2px;cursor:pointer;font-family:var(--cond);font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
     font-size:13px;display:flex;align-items:center;gap:7px;transition:.15s}
   #news-btn:hover{border-color:var(--red);color:var(--red)}
   #news-dot{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--glow);animation:dotpulse 1.4s ease-in-out infinite}
   @keyframes dotpulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.55);opacity:.5}}
-  @media(max-width:560px){#news-btn span{display:none}#news-btn{padding:0 11px;right:66px}}
+  @media(max-width:560px){#news-btn span{display:none}#news-btn{padding:0 11px}}
   #news-overlay{position:fixed;inset:0;z-index:100;display:none;align-items:flex-start;justify-content:center;padding:30px 14px;
     overflow-y:auto;background:rgba(6,10,14,.74);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
   #news-overlay.open{display:flex;animation:fade .3s ease}
@@ -231,11 +232,84 @@
   .tg{display:inline-block;font-family:var(--cond);font-weight:700;font-size:10px;letter-spacing:.5px;padding:1px 7px;border-radius:2px;color:#fff;margin-right:7px}
   .tg.new{background:#2f7d4f}.tg.imp{background:#b5852a}.tg.fix{background:#2a5f9e}.tg.rem{background:#9e3630}
   @media(max-width:600px){.nw{padding:22px 18px}.nw-cols{grid-template-columns:1fr;gap:16px}}
+  /* ============ HESAP / PROFIL / AUTH ============ */
+  #topbar{position:fixed;top:16px;right:16px;z-index:61;display:flex;gap:8px;align-items:center}
+  #profile-btn{width:44px;height:44px;border-radius:50%;background:var(--panel);border:1px solid var(--line);color:var(--txt);
+    cursor:pointer;font-size:18px;font-family:var(--disp);display:flex;align-items:center;justify-content:center;padding:0;transition:.15s}
+  #profile-btn:hover{border-color:var(--red);color:var(--red)}
+  #profile-btn.logged{background:linear-gradient(135deg,var(--red),var(--red-deep));color:#fff;border-color:var(--red);font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.4)}
+  #profile-menu{position:fixed;top:68px;right:16px;z-index:70;min-width:180px;background:linear-gradient(180deg,var(--panel),var(--bg2));
+    border:1px solid var(--line);border-radius:4px;padding:10px;display:none;box-shadow:0 18px 44px -16px rgba(0,0,0,.7)}
+  #profile-menu.open{display:block;animation:fade .2s ease}
+  #profile-menu .pm-name{font-family:var(--cond);font-weight:700;font-size:15px;padding:2px 6px 10px;border-bottom:1px solid var(--edge);margin-bottom:8px;word-break:break-all}
+  #profile-menu .pm-sub{font-family:var(--body);font-weight:400;font-size:11px;color:var(--muted);letter-spacing:0;text-transform:none}
+  #profile-menu button{width:100%;background:var(--inset);border:1px solid var(--line);color:var(--txt);padding:9px;border-radius:2px;
+    cursor:pointer;font-family:var(--cond);font-weight:700;letter-spacing:.5px;transition:.15s}
+  #profile-menu button:hover{border-color:var(--red);color:var(--red)}
+  #auth-overlay{position:fixed;inset:0;z-index:120;display:none;align-items:flex-start;justify-content:center;padding:40px 14px;overflow-y:auto;
+    background:rgba(6,10,14,.8);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+  #auth-overlay.open{display:flex;animation:fade .3s ease}
+  .auth{position:relative;width:100%;max-width:380px;background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);
+    border-top:1px solid var(--edge);border-radius:6px;padding:30px 26px 26px;box-shadow:0 30px 80px -26px rgba(0,0,0,.85)}
+  .auth-logo{font-family:var(--disp);font-weight:700;font-size:34px;letter-spacing:1px;text-align:center;line-height:1}
+  .auth-logo span{color:var(--red)}
+  .auth-sub{text-align:center;color:var(--muted);font-family:var(--cond);letter-spacing:2px;font-size:12px;margin:5px 0 18px;text-transform:uppercase}
+  #auth-pending:empty{display:none}
+  #auth-pending{background:rgba(24,227,179,.1);border:1px solid var(--teal);color:var(--txt);font-size:13px;line-height:1.5;padding:10px 12px;border-radius:3px;margin-bottom:16px}
+  .auth-tabs{display:flex;margin-bottom:18px;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+  .auth-tabs button{flex:1;background:var(--inset);border:none;color:var(--muted);padding:11px;cursor:pointer;font-family:var(--cond);font-weight:700;letter-spacing:1px;text-transform:uppercase;font-size:13px;transition:.15s}
+  .auth-tabs button.on{background:var(--red);color:#fff}
+  .auth input{width:100%;display:block;margin-bottom:11px}
+  .auth-err{color:var(--red);font-size:13px;min-height:18px;margin-bottom:8px;line-height:1.4}
+  .auth .btn{width:100%;justify-content:center}
+  .auth-or{text-align:center;color:var(--muted);font-family:var(--cond);letter-spacing:2px;font-size:12px;margin:16px 0 12px}
+  .auth-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px}
+  .auth-google .gg{display:inline-flex;width:20px;height:20px;align-items:center;justify-content:center;background:#fff;color:#4285F4;border-radius:50%;font-weight:800;font-family:var(--disp);font-size:14px;line-height:1}
+  #vh-toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:linear-gradient(180deg,var(--panel),var(--bg2));
+    border:1px solid var(--teal);color:var(--txt);padding:12px 22px;border-radius:4px;z-index:200;opacity:0;transition:.3s;pointer-events:none;
+    font-family:var(--cond);font-weight:700;letter-spacing:.5px;box-shadow:0 14px 40px -12px rgba(0,0,0,.7);max-width:88vw;text-align:center}
+  #vh-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  /* ============ CANLILIK / MİKRO ANİMASYON ============ */
+  .scorebar .sc.pop{animation:scpop .4s cubic-bezier(.2,1.7,.4,1)}
+  @keyframes scpop{0%{transform:scale(1)}35%{transform:scale(1.22);filter:brightness(1.35)}100%{transform:scale(1);filter:none}}
+  .result-hero.win{background:radial-gradient(ellipse 62% 100% at 50% 0%,rgba(255,209,102,.13),transparent 72%)}
+  .result-hero.win .big{color:var(--gold);text-shadow:0 0 44px rgba(255,209,102,.55);animation:heroIn .55s cubic-bezier(.2,1.4,.4,1)}
+  .result-hero.lose{background:radial-gradient(ellipse 62% 100% at 50% 0%,rgba(96,124,160,.12),transparent 72%)}
+  .result-hero.lose .big{color:#7e90a6;text-shadow:0 0 30px rgba(96,124,160,.35);animation:heroIn .55s ease}
+  @keyframes heroIn{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
+  #b-pickpanel.cin{animation:candIn .3s ease}
+  @keyframes candIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
-<button id="theme-btn" onclick="toggleTheme()" title="Tema değiştir">🌙</button>
-<button id="news-btn" onclick="openNews()" title="Yakında & Güncellemeler">📰 <span>YAKINDA</span><i id="news-dot"></i></button>
+<div id="topbar">
+  <button id="profile-btn" onclick="onProfileClick(event)" title="Profil / Giriş">👤</button>
+  <button id="news-btn" onclick="openNews()" title="Yakında & Güncellemeler">📰 <span>YAKINDA</span><i id="news-dot"></i></button>
+  <button id="theme-btn" onclick="toggleTheme()" title="Tema değiştir">🌙</button>
+</div>
+<div id="profile-menu"></div>
+<div id="vh-toast"></div>
+
+<!-- GIRIS / KAYIT -->
+<div id="auth-overlay" onclick="if(event.target===this)closeAuth()">
+  <div class="auth" role="dialog" aria-modal="true" aria-label="Giris / Kayit">
+    <button class="nw-close" onclick="closeAuth()" aria-label="Kapat">✕</button>
+    <div class="auth-logo">VALO<span>HELL</span></div>
+    <div class="auth-sub">Giriş Yap · Kayıt Ol</div>
+    <div id="auth-pending"></div>
+    <div class="auth-tabs">
+      <button id="atab-login" class="on" onclick="authTab('login')">Giriş Yap</button>
+      <button id="atab-reg" onclick="authTab('reg')">Kayıt Ol</button>
+    </div>
+    <input id="auth-id" type="text" placeholder="E-posta veya telefon" autocomplete="username" />
+    <input id="auth-uname" type="text" placeholder="Kullanıcı adın (tabloda görünür)" maxlength="14" style="display:none" />
+    <input id="auth-pw" type="password" placeholder="Şifre (en az 6 karakter)" autocomplete="current-password" />
+    <div id="auth-err" class="auth-err"></div>
+    <button id="auth-submit" class="btn" onclick="authSubmit()">Giriş Yap</button>
+    <div class="auth-or">— veya —</div>
+    <button class="btn ghost auth-google" onclick="authGoogle()"><span class="gg">G</span> Google ile devam et</button>
+  </div>
+</div>
 
 <!-- YAKINDA & GUNCELLEMELER -->
 <div id="news-overlay" onclick="if(event.target===this)closeNews()">
@@ -254,6 +328,12 @@
       </section>
       <section>
         <div class="nw-kicker">Güncellemeler</div>
+        <div class="nw-ver-row">v0.5</div>
+        <ul class="nw-log">
+          <li><b class="tg new">Yeni</b>Hesap sistemi — e-posta ya da telefonla kayıt ol, skorun hesabına işlensin.</li>
+          <li><b class="tg new">Yeni</b>Global lider tablosu — artık herkes aynı sıralamayı görüyor.</li>
+          <li><b class="tg imp">İyileştirme</b>Görsel canlılık: skor animasyonları, sonuç ekranı ve geçiş efektleri.</li>
+        </ul>
         <div class="nw-ver-row">v0.4</div>
         <ul class="nw-log">
           <li><b class="tg new">Yeni</b>Arkadaşlarla kupa modu — oda kodu, 10 kişiye kadar, canlı izleme.</li>
@@ -281,7 +361,7 @@
 
   <!-- LANDING -->
   <section id="s-landing" class="screen active">
-    <div class="logo" style="margin-top:14px">VALO<span>HELL</span></div>
+    <div class="logo">VALO<span>HELL</span></div>
     <div class="sub">Namağlup şampiyon olabilecek misin?</div>
     <div class="mode-grid">
       <div class="mode" onclick="startOnline()">
@@ -468,13 +548,7 @@
       <div class="note mt" id="r-mmr"></div>
     </div>
     <div id="r-boards"></div>
-    <div class="card mt" id="r-namebox">
-      <div class="center" style="font-weight:800;margin-bottom:10px">🏆 Skorunu lider tablosuna kaydet</div>
-      <div class="row" style="justify-content:center">
-        <input type="text" id="r-name" maxlength="14" placeholder="Adın" style="max-width:220px" />
-        <button class="btn" onclick="saveScore()">Kaydet</button>
-      </div>
-    </div>
+    <div class="card mt" id="r-namebox"></div>
     <div id="r-lb"></div>
     <div class="center mt row" style="justify-content:center">
       <button class="btn" onclick="show('s-builder');resetBuilder()">Yeni Takım Kur</button>
@@ -543,7 +617,7 @@ function toggleTheme(){const cur=localStorage.getItem('val_theme')||'dark';
   localStorage.setItem('val_theme',cur==='dark'?'light':'dark');applyTheme();}
 
 /* ============================== YAKINDA / GAZETE ============================== */
-const NEWS_VER='v0.4';
+const NEWS_VER='v0.5';
 function updateNewsDot(){const d=$('news-dot');if(d)d.style.display=(localStorage.getItem('val_news_seen')===NEWS_VER)?'none':'inline-block';}
 function openNews(){
   localStorage.setItem('val_news_seen',NEWS_VER);updateNewsDot();
@@ -674,7 +748,8 @@ function renderBuilder(){
 function renderCandidate(){
   const p=state.candidate;
   if(!p){$('b-pickpanel').style.display='none';return;}
-  $('b-pickpanel').style.display='';
+  const pp=$('b-pickpanel');pp.style.display='';
+  pp.classList.remove('cin');void pp.offsetWidth;pp.classList.add('cin');
   const cl=chemLinks(p,state.selected);
   let chemHtml='';
   if(cl){
@@ -829,8 +904,10 @@ function resumeFromHalftime(){state.halftimeDone=true;show('s-match');renderMatc
 function skipMatch(){clearTimeout(state.timer);let g=0;
   while(!matchEnded()&&g++<300){playRound();if(state.roundsPlayed===12&&!state.halftimeDone)state.halftimeDone=true;}
   renderMatch();finishMatch(matchEnded());}
+function setSc(id,val){const el=$(id),s=String(val);
+  if(el.textContent!==s){el.textContent=s;el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');}}
 function renderMatch(){
-  $('m-psc').textContent=state.score[0];$('m-bsc').textContent=state.score[1];
+  setSc('m-psc',state.score[0]);setSc('m-bsc',state.score[1]);
   const nextR=matchEnded()?state.roundsPlayed:state.roundsPlayed+1,side=currentSideForRound(nextR);
   $('m-side').textContent=(nextR>24?'UZATMA · ':'')+nextR+'. EL · '+(side==='attack'?'SALDIRI':'SAVUNMA');
   $('m-pmoney').textContent=state.pMoney;$('m-bmoney').textContent=state.bMoney;
@@ -844,6 +921,8 @@ function finishMatch(winner){
   clearTimeout(state.timer);state.matchOver=true;
   const pWon=winner==='p';
   $('r-verdict').textContent=pWon?'ZAFER':'MAĞLUBİYET';$('r-verdict').className='big '+(pWon?'win':'lose');
+  const hero=document.querySelector('.result-hero');
+  hero.classList.remove('win','lose');void hero.offsetWidth;hero.classList.add(pWon?'win':'lose');
   $('r-psc').textContent=state.score[0];$('r-bsc').textContent=state.score[1];
   const sc=p=>2*p.k+0.8*p.a-0.5*p.d;
   const winT=pWon?state.pTeam:state.bTeam, loseT=pWon?state.bTeam:state.pTeam;
@@ -860,54 +939,105 @@ function finishMatch(winner){
     </table>`;
   $('r-boards').innerHTML=`<div class="card">${board(state.pTeam)}${board(state.bTeam)}</div>`;
   state.lastWon=pWon;state.lastDiff=Math.abs(state.score[0]-state.score[1]);
-  $('r-mmr').textContent='';renderResultLB();
-  $('r-namebox').style.display='';$('r-name').value=state.username||'';
-  show('s-result');setTimeout(()=>{try{$('r-name').focus();}catch(e){}},60);
+  state.lastSaved=false;
+  $('r-mmr').textContent='';renderResultLB();renderSaveBox();
+  show('s-result');
 }
-function saveScore(){
-  const n=$('r-name').value.trim();
-  if(!n){alert('Lider tablosuna eklemek için bir isim gir.');return;}
-  state.username=n;
-  const res=updateLB(state.teamSize,state.lastWon,state.lastDiff);
-  $('r-mmr').innerHTML=`<b>${n}</b> · ${state.teamSize}v${state.teamSize} · Puan: <b style="color:var(--teal)">${res.rating}</b> `+
-    `(${state.lastWon?'+':''}${res.delta}) · ${res.w}G-${res.l}M`+(res.streak>1?` · ${res.streak} galibiyet serisi 🔥`:'');
-  $('r-namebox').style.display='none';
-  renderResultLB();
+function renderSaveBox(saving){
+  const el=$('r-namebox');if(!el)return;
+  if(state.lastSaved&&!saving){el.style.display='none';return;}
+  el.style.display='';
+  if(saving){el.innerHTML='<div class="center note">Kaydediliyor…</div>';return;}
+  if(authUser&&state.username){
+    el.innerHTML=`<div class="center" style="font-weight:800;margin-bottom:10px">🏆 Skorunu lider tablosuna kaydet</div>
+      <div class="row" style="justify-content:center"><button class="btn" onclick="saveScore()">${esc(state.username)} olarak kaydet</button></div>`;
+  }else{
+    el.innerHTML=`<div class="center" style="font-weight:800;margin-bottom:6px">🏆 Skorunu kaydetmek için giriş yap</div>
+      <div class="center note" style="margin-bottom:10px">Puanın hazır — giriş yapınca otomatik kaydedilir, kaybolmaz.</div>
+      <div class="row" style="justify-content:center"><button class="btn" onclick="saveScore()">Giriş Yap & Kaydet</button></div>`;
+  }
+}
+async function saveScore(){
+  if(!authUser||!state.username){
+    state.pendingScore={size:state.teamSize,won:state.lastWon,diff:state.lastDiff};
+    openAuth('login');return;
+  }
+  if(state.lastSaved)return;
+  state.lastSaved=true;renderSaveBox(true);
+  const res=await updateLB(state.teamSize,state.lastWon,state.lastDiff);
+  if(!res){state.lastSaved=false;renderSaveBox();toast('Kaydedilemedi — bağlantını kontrol edip tekrar dene.');return;}
+  $('r-mmr').innerHTML=`<b>${esc(state.username)}</b> · ${state.teamSize}v${state.teamSize} · Puan: <b style="color:var(--teal)">${res.rating}</b> `+
+    `(${res.delta>0?'+':''}${res.delta}) · ${res.w}G-${res.l}M`+(res.streak>1?` · ${res.streak} galibiyet serisi 🔥`:'');
+  renderSaveBox();renderResultLB();
 }
 let resultPeriod='all';
 function resultLBPeriod(p,el){resultPeriod=p;el.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));el.classList.add('on');renderResultLB();}
-function renderResultLB(){
-  const sz=state.teamSize;
-  const list=resultPeriod==='all'?getAll(sz):getDaily(sz).entries;
+async function renderResultLB(){
+  const sz=state.teamSize, myPeriod=resultPeriod;
+  const list=await fetchLB(sz,myPeriod);
+  if(myPeriod!==resultPeriod)return;                    // bekleme sırasında sekme değişti
   $('r-lb').innerHTML=`<div class="card mt">
     <div class="between" style="margin-bottom:10px">
       <div style="font-family:var(--cond);font-weight:700;font-size:16px;letter-spacing:.5px">🏆 ${sz}v${sz} Lider Tablosu</div>
       <div class="tabs sm"><button class="${resultPeriod==='all'?'on':''}" onclick="resultLBPeriod('all',this)">Tüm Zamanlar</button><button class="${resultPeriod==='daily'?'on':''}" onclick="resultLBPeriod('daily',this)">Günlük</button></div>
     </div>
-    <table><tr><th>#</th><th>Oyuncu</th><th class="num">Puan</th><th class="num">G/M</th><th class="num">Seri</th></tr>
-    ${list.slice(0,15).map((x,i)=>`<tr class="${x.name===state.username?'me':''}"><td>${i+1}</td><td>${x.name}</td>
-      <td class="num"><b>${x.rating}</b></td><td class="num">${x.w}/${x.l}</td>
-      <td class="num">${x.streak>1?'🔥'+x.streak:x.streak<-1?'❄'+(-x.streak):'–'}</td></tr>`).join('')}</table></div>`;
+    ${lbTable(list)}</div>`;
 }
 
-/* ============================== LİDER TABLOSU ============================== */
+/* ============================== LİDER TABLOSU (GLOBAL — Supabase) ============================== */
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
-const SEED=[];
-function mkSeed(n){return SEED.slice(0,n).map(([name,rating,w,l,streak])=>({name,rating,w,l,streak}));}
-function getAll(size){const k='val_lb4_'+size;let a=JSON.parse(localStorage.getItem(k)||'null');
-  if(!a){a=mkSeed(15);localStorage.setItem(k,JSON.stringify(a));}return a;}
-function getDaily(size){const k='val_lbd4_'+size;let o=JSON.parse(localStorage.getItem(k)||'null');
-  if(!o||o.day!==todayStr()){o={day:todayStr(),entries:mkSeed(6)};localStorage.setItem(k,JSON.stringify(o));}return o;}
-function bump(arr,won,diff){let me=arr.find(x=>x.name===state.username);
-  if(!me){me={name:state.username,rating:0,w:0,l:0,streak:0};arr.push(me);}
-  let delta;if(won){delta=20+Math.min(10,diff);me.rating+=delta;me.w++;me.streak=me.streak>0?me.streak+1:1;}
-  else{delta=-15;me.rating=Math.max(0,me.rating-15);me.l++;me.streak=me.streak<0?me.streak-1:-1;}
-  arr.sort((a,b)=>b.rating-a.rating);return {delta,me};
+const lbCache={};
+function lbInvalidate(){Object.keys(lbCache).forEach(k=>delete lbCache[k]);}
+async function fetchLB(size,period){
+  if(!sb)return null;
+  const key=size+'_'+period;
+  const c=lbCache[key];
+  if(c&&Date.now()-c.t<20000)return c.list;
+  try{
+    let list;
+    if(period==='all'){
+      const {data,error}=await sb.from('scores').select('username,rating,w,l,streak')
+        .eq('size',size).order('rating',{ascending:false}).order('w',{ascending:false}).limit(15);
+      if(error)return null;
+      list=(data||[]).map(x=>({name:x.username,rating:x.rating,w:x.w,l:x.l,streak:x.streak}));
+    }else{
+      const {data,error}=await sb.from('scores').select('username,d_rating,d_w,d_l,d_streak')
+        .eq('size',size).eq('d_day',todayStr()).order('d_rating',{ascending:false}).order('d_w',{ascending:false}).limit(15);
+      if(error)return null;
+      list=(data||[]).map(x=>({name:x.username,rating:x.d_rating,w:x.d_w,l:x.d_l,streak:x.d_streak}));
+    }
+    lbCache[key]={t:Date.now(),list};
+    return list;
+  }catch(e){return null;}
 }
-function updateLB(size,won,diff){
-  const all=getAll(size),r1=bump(all,won,diff);localStorage.setItem('val_lb4_'+size,JSON.stringify(all));
-  const d=getDaily(size),r2=bump(d.entries,won,diff);localStorage.setItem('val_lbd4_'+size,JSON.stringify(d));
-  return {rating:r1.me.rating,delta:r1.delta,w:r1.me.w,l:r1.me.l,streak:r1.me.streak};
+function lbTable(list){
+  if(list===null)return'<p class="note">Tablo yüklenemedi — bağlantını kontrol et.</p>';
+  if(!list.length)return'<p class="note">Henüz kayıt yok — ilk sen ol! 🏆</p>';
+  return `<table><tr><th>#</th><th>Oyuncu</th><th class="num">Puan</th><th class="num">G/M</th><th class="num">Seri</th></tr>
+    ${list.map((x,i)=>`<tr class="${x.name===state.username?'me':''}"><td>${i+1}</td><td>${esc(x.name)}</td>
+      <td class="num"><b>${x.rating}</b></td><td class="num">${x.w}/${x.l}</td>
+      <td class="num">${x.streak>1?'🔥'+x.streak:x.streak<-1?'❄'+(-x.streak):'–'}</td></tr>`).join('')}</table>`;
+}
+async function updateLB(size,won,diff){
+  if(!sb||!authUser||!state.username)return null;
+  let row=null;
+  try{const r=await sb.from('scores').select('*').eq('user_id',authUser.id).eq('size',size).maybeSingle();row=r.data;}catch(e){}
+  if(!row)row={user_id:authUser.id,size,username:state.username,rating:0,w:0,l:0,streak:0,
+               d_day:todayStr(),d_rating:0,d_w:0,d_l:0,d_streak:0};
+  if(row.d_day!==todayStr()){row.d_day=todayStr();row.d_rating=0;row.d_w=0;row.d_l=0;row.d_streak=0;}
+  const delta=won?20+Math.min(10,diff):-15;
+  if(won){
+    row.rating+=delta;row.w++;row.streak=row.streak>0?row.streak+1:1;
+    row.d_rating+=delta;row.d_w++;row.d_streak=row.d_streak>0?row.d_streak+1:1;
+  }else{
+    row.rating=Math.max(0,row.rating+delta);row.l++;row.streak=row.streak<0?row.streak-1:-1;
+    row.d_rating=Math.max(0,row.d_rating+delta);row.d_l++;row.d_streak=row.d_streak<0?row.d_streak-1:-1;
+  }
+  row.username=state.username;row.updated_at=new Date().toISOString();
+  const {error}=await sb.from('scores').upsert(row);
+  if(error)return null;
+  lbInvalidate();
+  return {rating:row.rating,delta,w:row.w,l:row.l,streak:row.streak};
 }
 const lbHome={p5:'all',p3:'all'};
 function homePeriod(sz,p,el){
@@ -915,17 +1045,16 @@ function homePeriod(sz,p,el){
   el.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));el.classList.add('on');
   renderHomeLB();
 }
-function renderHomeLB(){
-  [5,3].forEach(sz=>{
+async function renderHomeLB(){
+  for(const sz of [5,3]){
     const period=sz===5?lbHome.p5:lbHome.p3;
-    const list=period==='all'?getAll(sz):getDaily(sz).entries;
-    $('h'+sz+'-body').innerHTML=list.length?`<table>
-      <tr><th>#</th><th>Oyuncu</th><th class="num">Puan</th><th class="num">G/M</th><th class="num">Seri</th></tr>
-      ${list.slice(0,15).map((x,i)=>`<tr class="${x.name===state.username?'me':''}"><td>${i+1}</td><td>${x.name}</td>
-        <td class="num"><b>${x.rating}</b></td><td class="num">${x.w}/${x.l}</td>
-        <td class="num">${x.streak>1?'🔥'+x.streak:x.streak<-1?'❄'+(-x.streak):'–'}</td></tr>`).join('')}</table>`
-      :'<p class="note">Henüz kayıt yok.</p>';
-  });
+    const el=$('h'+sz+'-body');if(!el)continue;
+    if(!lbCache[sz+'_'+period])el.innerHTML='<p class="note">Yükleniyor…</p>';
+    const list=await fetchLB(sz,period);
+    const cur=sz===5?lbHome.p5:lbHome.p3;
+    if(cur!==period)continue;                          // bekleme sırasında sekme değişti
+    el.innerHTML=lbTable(list);
+  }
 }
 
 /* ============================== BAŞLAT ============================== */
@@ -933,16 +1062,207 @@ function renderHomeLB(){
 const SB_URL='https://wcfwvjpxmowwdookyzwk.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjZnd2anB4bW93d2Rvb2t5endrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4ODU5NTYsImV4cCI6MjA5ODQ2MTk1Nn0.QP7fznw_XVVriK-qZ6TgF5pRUm-aZDQl0PUJ-2d64F0';
 const sb = window.supabase ? window.supabase.createClient(SB_URL,SB_KEY) : null;
+
+/* ============================== HESAP (Supabase Auth) ============================== */
+let authUser=null, authMode='login', _regInProgress=false, _toastT=null;
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function toast(msg){const t=$('vh-toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(_toastT);_toastT=setTimeout(()=>t.classList.remove('show'),3400);}
+function cleanUname(raw){
+  const u=String(raw||'').replace(/[<>&"'`]/g,'').replace(/\s+/g,' ').trim();
+  return (u.length>=3&&u.length<=14)?u:null;
+}
+function cleanMPName(raw){return String(raw||'').replace(/[<>&"'`]/g,'').replace(/\s+/g,' ').trim().slice(0,14);}
+function normId(raw){                                  // e-posta ya da telefon → auth kimliği
+  raw=String(raw||'').trim();
+  if(!raw)return null;
+  if(raw.includes('@'))return /^\S+@\S+\.\S+$/.test(raw)?raw.toLowerCase():null;
+  if(/[^\d\s()+\-.]/.test(raw))return null;            // rakam/ayraç dışında karakter → geçersiz
+  let d=raw.replace(/\D/g,'');
+  if(d.length===10&&d[0]==='5')d='90'+d;               // 5321234567
+  else if(d.length===11&&d[0]==='0')d='9'+d;           // 05321234567
+  if(d.length<10||d.length>15)return null;
+  return 'tel'+d+'@valohell.online';                   // telefon → sentetik e-posta (SMS maliyeti yok)
+}
+function fmtIdent(u){
+  const e=u&&u.email||'';
+  const m=e.match(/^tel(\d+)@valohell\.online$/);
+  return m?('+'+m[1]):e;
+}
+function trAuthErr(m){
+  m=String(m||'');
+  if(/invalid login credentials/i.test(m))return'Bilgiler hatalı — e-posta/telefon ya da şifre yanlış.';
+  if(/already registered|already exists/i.test(m))return'Bu hesap zaten kayıtlı — "Giriş Yap" sekmesini kullan.';
+  if(/password.*(at least|short)/i.test(m))return'Şifre en az 6 karakter olmalı.';
+  if(/is invalid/i.test(m))return'Geçersiz e-posta/telefon adresi.';
+  if(/rate limit|too many/i.test(m))return'Çok fazla deneme yapıldı — biraz bekleyip tekrar dene.';
+  return'Bir hata oluştu: '+m;
+}
+function openAuth(mode){
+  authMode=mode||'login';
+  renderAuthMode();
+  $('auth-overlay').classList.add('open');
+  document.addEventListener('keydown',authEsc);
+  setTimeout(()=>{try{(authMode==='uname'?$('auth-uname'):$('auth-id')).focus();}catch(e){}},60);
+}
+function closeAuth(){$('auth-overlay').classList.remove('open');document.removeEventListener('keydown',authEsc);}
+function authEsc(e){if(e.key==='Escape')closeAuth();}
+function authTab(m){authMode=m;renderAuthMode();}
+function renderAuthMode(){
+  const tabs=document.querySelector('.auth-tabs'),or=document.querySelector('.auth-or'),gg=document.querySelector('.auth-google');
+  $('atab-login').classList.toggle('on',authMode==='login');
+  $('atab-reg').classList.toggle('on',authMode==='reg');
+  $('auth-err').textContent='';
+  const uname=authMode==='uname';
+  tabs.style.display=uname?'none':'flex';
+  $('auth-id').style.display=uname?'none':'';
+  $('auth-pw').style.display=uname?'none':'';
+  $('auth-uname').style.display=(uname||authMode==='reg')?'':'none';
+  or.style.display=uname?'none':'';gg.style.display=uname?'none':'flex';
+  $('auth-submit').textContent=uname?'Kullanıcı Adını Kaydet':authMode==='reg'?'Kayıt Ol':'Giriş Yap';
+  $('auth-pending').textContent=uname?'Hesabın hazır — lider tablosunda görünecek bir kullanıcı adı seç.':
+    (state.pendingScore?'🏆 Skorun bekliyor — giriş yapınca otomatik kaydedilecek, kaybolmaz.':'');
+}
+async function ensureProfile(user,uname){
+  let name=uname;
+  let {error}=await sb.from('profiles').insert({id:user.id,username:name});
+  if(error){
+    const {data:mine}=await sb.from('profiles').select('username').eq('id',user.id).maybeSingle();
+    if(mine)return mine.username;
+    name=uname.slice(0,10)+Math.floor(100+Math.random()*900);
+    const r2=await sb.from('profiles').insert({id:user.id,username:name});
+    if(r2.error)return null;
+  }
+  return name;
+}
+async function authSubmit(){
+  const err=$('auth-err'),btn=$('auth-submit');
+  err.textContent='';btn.disabled=true;btn.textContent='İşleniyor…';
+  try{
+    if(!sb){err.textContent='İnternet bağlantısı gerekli.';return;}
+    if(authMode==='uname'){await submitUsername();return;}
+    const id=normId($('auth-id').value), pw=$('auth-pw').value;
+    if(!id){err.textContent='Geçerli bir e-posta ya da telefon numarası gir.';return;}
+    if(pw.length<6){err.textContent='Şifre en az 6 karakter olmalı.';return;}
+    if(authMode==='reg'){
+      const uname=cleanUname($('auth-uname').value);
+      if(!uname){err.textContent='Kullanıcı adı 3-14 karakter olmalı.';return;}
+      const {data:ex}=await sb.from('profiles').select('id').ilike('username',uname).maybeSingle();
+      if(ex){err.textContent='Bu kullanıcı adı alınmış — başka bir tane dene.';return;}
+      _regInProgress=true;
+      const {data,error}=await sb.auth.signUp({email:id,password:pw,options:{data:{username:uname}}});
+      if(error){err.textContent=trAuthErr(error.message);return;}
+      let user=data.user;
+      if(!data.session){
+        const r=await sb.auth.signInWithPassword({email:id,password:pw});
+        if(r.error){err.textContent=trAuthErr(r.error.message);return;}
+        user=r.data.user;
+      }
+      const finalName=await ensureProfile(user,uname);
+      if(!finalName){err.textContent='Profil oluşturulamadı — tekrar dene.';return;}
+      authUser=user;state.username=finalName;
+      refreshAuthUI();closeAuth();toast('Hoş geldin, '+finalName+'! 🎉');
+      flushPending();
+    }else{
+      const {data,error}=await sb.auth.signInWithPassword({email:id,password:pw});
+      if(error){err.textContent=trAuthErr(error.message);return;}
+      closeAuth();  // profil yüklemesi onAuthStateChange → handleAuthSession'da
+    }
+  }finally{
+    _regInProgress=false;btn.disabled=false;
+    btn.textContent=authMode==='uname'?'Kullanıcı Adını Kaydet':authMode==='reg'?'Kayıt Ol':'Giriş Yap';
+  }
+}
+async function submitUsername(){
+  const err=$('auth-err');
+  const uname=cleanUname($('auth-uname').value);
+  if(!uname){err.textContent='Kullanıcı adı 3-14 karakter olmalı.';return;}
+  const {data:{user}}=await sb.auth.getUser();
+  if(!user){err.textContent='Oturum bulunamadı — tekrar giriş yap.';return;}
+  const {data:ex}=await sb.from('profiles').select('id').ilike('username',uname).maybeSingle();
+  if(ex){err.textContent='Bu kullanıcı adı alınmış — başka bir tane dene.';return;}
+  const {error}=await sb.from('profiles').insert({id:user.id,username:uname});
+  if(error){err.textContent='Kaydedilemedi: '+trAuthErr(error.message);return;}
+  authUser=user;state.username=uname;
+  refreshAuthUI();closeAuth();toast('Hoş geldin, '+uname+'! 🎉');
+  flushPending();
+}
+async function authGoogle(){
+  if(!sb)return;
+  const {error}=await sb.auth.signInWithOAuth({provider:'google',
+    options:{redirectTo:location.origin+location.pathname}});
+  if(error)$('auth-err').textContent='Google girişi henüz aktif değil — e-posta ya da telefonla kayıt olabilirsin.';
+}
+async function handleAuthSession(session){
+  if(!session||!session.user){authUser=null;state.username='';refreshAuthUI();return;}
+  if(authUser&&authUser.id===session.user.id&&state.username)return;   // zaten yüklü
+  if(_regInProgress){authUser=session.user;return;}                    // kayıt akışı profili kendisi yazar
+  authUser=session.user;
+  const {data:p}=await sb.from('profiles').select('username').eq('id',authUser.id).maybeSingle();
+  if(p){state.username=p.username;refreshAuthUI();flushPending();}
+  else{
+    refreshAuthUI();
+    const guess=(authUser.user_metadata&&authUser.user_metadata.username)||(authUser.email?authUser.email.split('@')[0]:'');
+    openAuth('uname');$('auth-uname').value=String(guess).replace(/^tel\d+$/,'').slice(0,14);
+  }
+}
+function refreshAuthUI(){
+  const b=$('profile-btn');if(!b)return;
+  if(authUser&&state.username){b.classList.add('logged');b.textContent=state.username[0].toUpperCase();b.title=state.username;}
+  else{b.classList.remove('logged');b.textContent='👤';b.title='Profil / Giriş';}
+  $('profile-menu').classList.remove('open');
+  if($('s-landing').classList.contains('active'))renderHomeLB();
+  if($('s-result').classList.contains('active')){renderSaveBox();renderResultLB();}
+}
+function onProfileClick(e){
+  e.stopPropagation();
+  if(!authUser||!state.username){openAuth('login');return;}
+  const m=$('profile-menu');
+  if(m.classList.contains('open')){m.classList.remove('open');return;}
+  m.innerHTML=`<div class="pm-name">${esc(state.username)}<div class="pm-sub">${esc(fmtIdent(authUser))}</div></div>
+    <button onclick="doLogout()">Çıkış Yap</button>`;
+  m.classList.add('open');
+}
+document.addEventListener('click',e=>{
+  const m=$('profile-menu');
+  if(m&&m.classList.contains('open')&&!m.contains(e.target)&&e.target.id!=='profile-btn')m.classList.remove('open');
+});
+async function doLogout(){
+  try{await sb.auth.signOut();}catch(e){}
+  authUser=null;state.username='';refreshAuthUI();toast('Çıkış yapıldı.');
+}
+function flushPending(){
+  const p=state.pendingScore;
+  if(!p||!authUser||!state.username)return;
+  state.pendingScore=null;
+  updateLB(p.size,p.won,p.diff).then(res=>{
+    if(!res){state.pendingScore=p;toast('Skor kaydedilemedi — sonuç ekranından tekrar dene.');return;}
+    toast(`🏆 Skorun kaydedildi — ${res.rating} puan (${res.delta>0?'+':''}${res.delta})`);
+    if($('s-result').classList.contains('active')){
+      $('r-mmr').innerHTML=`<b>${esc(state.username)}</b> · ${p.size}v${p.size} · Puan: <b style="color:var(--teal)">${res.rating}</b> (${res.delta>0?'+':''}${res.delta}) · ${res.w}G-${res.l}M`+(res.streak>1?` · ${res.streak} galibiyet serisi 🔥`:'');
+      state.lastSaved=true;renderSaveBox();renderResultLB();
+    }
+  });
+}
+async function initAuth(){
+  if(!sb)return;
+  sb.auth.onAuthStateChange((evt,session)=>{setTimeout(()=>{
+    if(evt==='SIGNED_OUT'){authUser=null;state.username='';refreshAuthUI();}
+    else if(session)handleAuthSession(session);
+  },0);});
+  const {data:{session}}=await sb.auth.getSession();
+  if(session)await handleAuthSession(session);
+}
+
 let lset={size:5,time:30,max:10};   // oda kapasitesi sabit (kupa); seçilmez
 let room={code:null,isHost:false,me:null,chan:null,data:null,_started:false};
-function startLocal(){ if(!sb){alert('Local mod için internet gerekli.');return;} lseg(); $('lc-name').value='';$('lj-name').value='';$('lj-code').value='';$('local-msg').textContent=''; show('s-local'); }
+function startLocal(){ if(!sb){alert('Local mod için internet gerekli.');return;} lseg(); $('lc-name').value=state.username||'';$('lj-name').value=state.username||'';$('lj-code').value='';$('local-msg').textContent=''; show('s-local'); }
 function lseg(){
   $('lc-size').innerHTML=[[5,'5v5'],[3,'3v3']].map(a=>`<button class="${lset.size===a[0]?'on':''}" onclick="lset.size=${a[0]};lseg()">${a[1]}</button>`).join('');
   $('lc-time').innerHTML=[15,30,45,60].map(v=>`<button class="${lset.time===v?'on':''}" onclick="lset.time=${v};lseg()">${v}sn</button>`).join('');
 }
 function genCode(){return String(Math.floor(10000+Math.random()*90000));}
 async function createRoom(){
-  const name=$('lc-name').value.trim(); if(!name)return alert('Adını gir.');
+  const name=cleanMPName($('lc-name').value); if(!name)return alert('Adını gir.');
   $('local-msg').textContent='Oda kuruluyor...';
   let code='';
   for(let i=0;i<6;i++){ code=genCode(); const {data}=await sb.from('rooms').select('code').eq('code',code); if(!data||!data.length)break; }
@@ -952,7 +1272,7 @@ async function createRoom(){
   room={code,isHost:true,me:name,chan:null,data:null,_started:false}; $('local-msg').textContent=''; enterLobby();
 }
 async function joinRoom(){
-  const name=$('lj-name').value.trim(), code=$('lj-code').value.trim();
+  const name=cleanMPName($('lj-name').value), code=$('lj-code').value.trim();
   if(!name||!code)return alert('Ad ve oda kodu gir.');
   $('local-msg').textContent='Katılınıyor...';
   const {data:r}=await sb.from('rooms').select('*').eq('code',code).maybeSingle();
@@ -981,7 +1301,7 @@ async function refreshLobby(){
   const {data:ps}=await sb.from('room_players').select('*').eq('room_code',room.code).order('joined_at');
   const list=ps||[];
   $('lobby-code').textContent=r.code; $('lobby-max').textContent=r.max_players; $('lobby-maxnote').textContent=r.max_players; $('lobby-count').textContent=list.length;
-  $('lobby-players').innerHTML=list.map(p=>`<div style="padding:7px 0;border-bottom:1px solid var(--line)">${p.is_host?'👑 ':'👤 '}<b>${p.name}</b>${p.name===room.me?' <span style="color:var(--teal)">(sen)</span>':''}</div>`).join('');
+  $('lobby-players').innerHTML=list.map(p=>`<div style="padding:7px 0;border-bottom:1px solid var(--line)">${p.is_host?'👑 ':'👤 '}<b>${esc(p.name)}</b>${p.name===room.me?' <span style="color:var(--teal)">(sen)</span>':''}</div>`).join('');
   const b=$('lobby-start');
   if(room.isHost){ b.style.display=''; b.disabled=list.length<2; $('lobby-hint').textContent=list.length<2?'En az 2 oyuncu bekleniyor...':'Herkes geldi, başlatabilirsin!'; }
   else { b.style.display='none'; $('lobby-hint').textContent='Host başlatmayı bekliyor...'; }
@@ -1094,9 +1414,9 @@ function watchMatch(r){ const m=r.state&&r.state.currentMatch; if(!m)return; con
 function playbackMP(m){
   clearTimeout(state.timer);clearInterval(state.dtInt);
   const mine=(m.a===room.me||m.b===room.me);
-  $('m-mpinfo').style.display=''; $('m-mpinfo').innerHTML=(mine?'⚔️ SENİN MAÇIN':'👁 İZLİYORSUN')+' — '+m.a+' vs '+m.b+' <span style="color:var(--muted)">· '+(m.half===2?'2. yarı':'1. yarı')+'</span>';
-  $('m-pname').innerHTML=logoChip(m.boardA.tag,colorFor(m.a))+' '+m.a;
-  $('m-bname').innerHTML=m.b+' '+logoChip(m.boardB.tag,colorFor(m.b));
+  $('m-mpinfo').style.display=''; $('m-mpinfo').innerHTML=(mine?'⚔️ SENİN MAÇIN':'👁 İZLİYORSUN')+' — '+esc(m.a)+' vs '+esc(m.b)+' <span style="color:var(--muted)">· '+(m.half===2?'2. yarı':'1. yarı')+'</span>';
+  $('m-pname').innerHTML=logoChip(m.boardA.tag,colorFor(m.a))+' '+esc(m.a);
+  $('m-bname').innerHTML=esc(m.b)+' '+logoChip(m.boardB.tag,colorFor(m.b));
   $('m-buy').textContent='';$('m-pmoney').textContent='-';$('m-bmoney').textContent='-';
   show('s-match');
   let rounds,startIdx;
@@ -1111,10 +1431,10 @@ function playbackMP(m){
   function step(){
     if(i>=rounds.length) return (m.half===2?endPlayback(m):halftimePause(m));
     const rd=rounds[i]; const rn=startIdx+i+1; i++;
-    $('m-psc').textContent=rd.sa;$('m-bsc').textContent=rd.sb;
+    setSc('m-psc',rd.sa);setSc('m-bsc',rd.sb);
     $('m-side').textContent=rn+'. EL · '+m.a+' '+(rd.side==='attack'?'SALDIRI':'SAVUNMA');
     $('m-timeline').innerHTML+='<i class="'+(rd.pWon?'pw':'bw')+(rn===12?' half':'')+'"></i>';
-    $('m-feed').insertAdjacentHTML('afterbegin','<div>R'+rn+' · <b>'+(rd.pWon?m.a:m.b)+'</b> aldı <span style="float:right">'+rd.sa+'-'+rd.sb+'</span></div>');
+    $('m-feed').insertAdjacentHTML('afterbegin','<div>R'+rn+' · <b>'+esc(rd.pWon?m.a:m.b)+'</b> aldı <span style="float:right">'+rd.sa+'-'+rd.sb+'</span></div>');
     state.timer=setTimeout(step,360);
   }
   state.timer=setTimeout(step,600);
@@ -1144,14 +1464,14 @@ async function saveHalftimeMP(){
   $('m-mpinfo').innerHTML='✓ Hazırsın — 2. yarı için rakip bekleniyor...'; show('s-match');
 }
 function endPlayback(m){
-  $('m-mpinfo').innerHTML='🏆 <b>'+m.winner+'</b> kazandı! '+m.score[0]+'-'+m.score[1]+(room.isHost?' · sıradaki geliyor...':' · bekle...');
+  $('m-mpinfo').innerHTML='🏆 <b>'+esc(m.winner)+'</b> kazandı! '+m.score[0]+'-'+m.score[1]+(room.isHost?' · sıradaki geliyor...':' · bekle...');
   if(room.isHost) setTimeout(()=>{ if(room.data&&room.data.status==='playing') advanceBracket(); },4200);
 }
 function showChampion(name){
   clearTimeout(state.timer);
   $('champ-name').textContent=name||'?';
   const log=(room.data&&room.data.state&&room.data.state.bracket&&room.data.state.bracket.log)||[];
-  $('champ-bracket').innerHTML=log.map(l=>'<div>'+l+'</div>').join('');
+  $('champ-bracket').innerHTML=log.map(l=>'<div>'+esc(l)+'</div>').join('');
   show('s-champion');
 }
 function enterDraft(r){
@@ -1204,7 +1524,7 @@ async function onPlayers(){
   }
 }
 
-applyTheme();updateNewsDot();getAll(5);getAll(3);renderHomeLB();
+applyTheme();updateNewsDot();renderHomeLB();initAuth();
 </script>
 </body>
 </html>
