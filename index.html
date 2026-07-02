@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Teko:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.14/dist/dotlottie-wc.js" type="module"></script>
 <style>
   :root{
     --page-bg:#0f1923; --bg2:#131e28; --panel:#16212c; --panel2:#1e2a36;
@@ -81,9 +82,9 @@
   .mode.locked:hover::before{width:4px}
   /* FORM */
   label.fld{display:block;margin:16px 0 7px;font-family:var(--cond);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:2px}
-  input[type=text]{width:100%;background:var(--inset);border:1px solid var(--line);color:var(--txt);
+  input[type=text],input[type=password]{width:100%;background:var(--inset);border:1px solid var(--line);color:var(--txt);
     padding:12px 14px;border-radius:2px;font-size:16px;font-family:var(--body);outline:none;transition:.15s}
-  input[type=text]:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--glow)}
+  input[type=text]:focus,input[type=password]:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--glow)}
   input::placeholder{color:var(--muted);opacity:.7}
   .seg{display:flex;gap:8px;flex-wrap:wrap}
   .seg button{flex:1;min-width:78px;font-family:var(--cond);font-weight:600;font-size:14px;letter-spacing:.5px;
@@ -135,7 +136,10 @@
   .sidebanner{font-family:var(--cond);text-align:center;font-weight:700;letter-spacing:1px;background:linear-gradient(180deg,var(--panel),var(--bg2));
     border:1px solid var(--line);border-left:3px solid var(--red);border-radius:2px;padding:12px;margin-bottom:16px}
   .sidebanner .sc{font-family:var(--disp);font-size:30px;font-weight:700;margin-bottom:2px}
-  .sidebanner small{color:var(--muted);font-weight:600;letter-spacing:2px;font-size:11px}
+  .sidebanner small{color:var(--muted);font-weight:700;letter-spacing:2px;font-size:13px}
+  .side-w{font-family:var(--cond);font-weight:800;font-size:21px;letter-spacing:2px;display:inline-block;margin-left:4px;vertical-align:middle}
+  .side-w.atk{color:var(--red);text-shadow:0 0 16px var(--glow)}
+  .side-w.def{color:var(--teal);text-shadow:0 0 16px rgba(24,227,179,.45)}
   .dial{margin:16px 0}
   .dial .t{font-family:var(--cond);font-weight:700;letter-spacing:.5px;margin-bottom:9px;font-size:16px}
   /* MATCH */
@@ -197,7 +201,17 @@
   #b-ovr{font-family:var(--disp)}
   .feed::-webkit-scrollbar,.pool::-webkit-scrollbar{width:8px}
   .feed::-webkit-scrollbar-thumb,.pool::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px}
-  @media(max-width:560px){.scorebar .sc{font-size:46px}.logo{font-size:47px;margin-top:40px}.mode .big{font-size:31px}}
+  @media(max-width:560px){
+    body{padding-top:72px}                                    /* sabit üst bar (60px) içeriğe binmesin */
+    .logo{font-size:47px}
+    .mode .big{font-size:31px}
+    .scorebar{gap:8px;flex-wrap:nowrap}                       /* skor tabelası tek satır */
+    .scorebar .sc{font-size:38px;min-width:48px}
+    .scorebar .tm{min-width:0;font-size:12px;flex:1;overflow:hidden}
+    .scorebar .tm .logo-name{max-width:62px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:bottom}
+    #b-pickpanel .row{flex-direction:column;align-items:stretch}  /* reroll butonları alt alta */
+    #b-pickpanel .row .btn{width:100%}
+  }
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
   /* ============ YAKINDA / GAZETE ============ */
   #news-btn{height:44px;padding:0 14px;background:var(--panel);border:1px solid var(--line);
@@ -279,6 +293,9 @@
   @keyframes heroIn{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
   #b-pickpanel.cin{animation:candIn .3s ease}
   @keyframes candIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+  .feed .cmt{color:var(--gold);font-size:12px;font-style:italic;opacity:.9;padding:3px 0 7px}
+  #r-anim{width:210px;height:210px;margin:-10px auto -22px;display:none;pointer-events:none}
+  @media(max-width:560px){#r-anim{width:150px;height:150px}}
 </style>
 </head>
 <body>
@@ -328,6 +345,13 @@
       </section>
       <section>
         <div class="nw-kicker">Güncellemeler</div>
+        <div class="nw-ver-row">v0.6</div>
+        <ul class="nw-log">
+          <li><b class="tg new">Yeni</b>Maç içi spiker yorumları — one tap, clutch, ace anları anlatılıyor.</li>
+          <li><b class="tg new">Yeni</b>Zafer ekranında kutlama animasyonu.</li>
+          <li><b class="tg imp">İyileştirme</b>Mobil düzen: skor tabelası, butonlar ve üst bar artık düzgün.</li>
+          <li><b class="tg imp">İyileştirme</b>Kimya rozeti artık gerçek etkiyi gösterir; strateji ekranında taraf yazısı renkli ve büyük.</li>
+        </ul>
         <div class="nw-ver-row">v0.5</div>
         <ul class="nw-log">
           <li><b class="tg new">Yeni</b>Hesap sistemi — e-posta ya da telefonla kayıt ol, skorun hesabına işlensin.</li>
@@ -542,6 +566,7 @@
   <!-- RESULT -->
   <section id="s-result" class="screen">
     <div class="result-hero">
+      <dotlottie-wc id="r-anim" src="https://lottie.host/290ad03e-6569-4360-bd2b-a1f58bf21adb/E3gqQvEFah.lottie" autoplay loop></dotlottie-wc>
       <div class="big" id="r-verdict">ZAFER</div>
       <div style="font-size:30px;font-weight:900;margin-top:6px"><span class="p" id="r-psc">13</span>
         <span style="color:var(--muted)"> : </span><span class="b" id="r-bsc">8</span></div>
@@ -586,7 +611,7 @@ const TEAMS = {
 };
 const ROSTER=[];
 for(const org in TEAMS) for(const p of TEAMS[org]) ROSTER.push({n:p[0],r:p[1],c:p[2],ovr:p[3],o:org});
-const BOT_NAMES=["MIBR","GX","NAVI","C9","FUR","M8","KOI","EG","LEV","KRU","FPX","ZETA"];
+const BOT_NAMES=["MIBR","GX","NAVI","C9","FUR","KOI"];   // hepsinin logos/ png'si var (logosuz M8/EG/LEV/KRU/FPX/ZETA çıkarıldı)
 
 /* ============================== DENGE SABİTLERİ ============================== */
 // Etki ağırlıkları (maks katkılar oranı): Takım Gücü %45 · Strateji %25 · Kimya %15 · Ekonomi %10 · Şans %5
@@ -617,7 +642,7 @@ function toggleTheme(){const cur=localStorage.getItem('val_theme')||'dark';
   localStorage.setItem('val_theme',cur==='dark'?'light':'dark');applyTheme();}
 
 /* ============================== YAKINDA / GAZETE ============================== */
-const NEWS_VER='v0.5';
+const NEWS_VER='v0.6';
 function updateNewsDot(){const d=$('news-dot');if(d)d.style.display=(localStorage.getItem('val_news_seen')===NEWS_VER)?'none':'inline-block';}
 function openNews(){
   localStorage.setItem('val_news_seen',NEWS_VER);updateNewsDot();
@@ -649,14 +674,17 @@ function computeChem(team){
   const meter=clamp(Math.round(mean(adj)*2),0,10);
   return {meter,boost:(meter/10)*5};
 }
-// Aday oyuncu mevcut kadroya kimya katıyor mu? (rozet için)
+// Aday oyuncu kimyayı GERÇEKTEN artırıyor mu? (rozet için — computeChem farkı)
 function chemLinks(cand,sel){
   if(!cand||!sel||!sel.length)return null;
+  const before=computeChem(sel).meter;
+  const after=computeChem(sel.concat([cand])).meter;
+  const delta=after-before;                              // rol fazlası cezası dahil net etki
   const org=sel.filter(p=>p.o===cand.o).length;
   const ctry=sel.filter(p=>p.c===cand.c).length;
   const present=new Set(sel.map(p=>p.r)), target=state.teamSize>=5?4:3;
   const newRole=!present.has(cand.r)&&present.size<target;
-  return {org,ctry,newRole,positive:(org>0||ctry>0||newRole)};
+  return {org,ctry,newRole,delta,positive:delta>0};
 }
 function buildTeam(players,name,neutral){
   const list=players.map(p=>({...p,sub:subStats(p),k:0,d:0,a:0}));
@@ -755,9 +783,9 @@ function renderCandidate(){
   if(cl){
     if(cl.positive){
       const rs=[]; if(cl.org>0)rs.push('aynı takım'); if(cl.ctry>0)rs.push('aynı ülke'); if(cl.newRole)rs.push('rol dengesi');
-      chemHtml=`<div style="margin-top:10px"><span class="chem-badge">✓ KİMYA</span> <span class="note" style="font-size:12px">${rs.join(' · ')}</span></div>`;
+      chemHtml=`<div style="margin-top:10px"><span class="chem-badge">✓ KİMYA +${cl.delta}</span> <span class="note" style="font-size:12px">${rs.length?rs.join(' · '):'kadro uyumu'}</span></div>`;
     } else {
-      chemHtml=`<div style="margin-top:10px" class="note">— kimya bağı yok</div>`;
+      chemHtml=`<div style="margin-top:10px" class="note">— kimyaya katkısı yok${cl.delta<0?' (düşürür)':''}</div>`;
     }
   }
   $('b-candidate').innerHTML=`<div style="text-align:center;padding:12px 0 2px">
@@ -780,7 +808,8 @@ function renderTeamPick(){   // kadro tamamlaninca takim kimligi/logosu sec (koz
        <span class="tp-fallback" style="display:none;background:${colorFor(org)}">${org}</span>
        <span class="tp-name">${org}</span></div>`).join('');
 }
-function pickTeamOrg(org){ state.teamOrg=org; renderTeamPick(); $('b-go').disabled=state.selected.length!==state.teamSize||!state.teamOrg; }
+function pickTeamOrg(org){ state.teamOrg=org; renderTeamPick(); $('b-go').disabled=state.selected.length!==state.teamSize||!state.teamOrg;
+  setTimeout(()=>{try{$('b-go').scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}},80); }   // seçince Stratejini Kur görünsün
 function confirmBuilder(){
   if(state.selected.length!==state.teamSize||!state.teamOrg)return;
   if(state.mp){ goStrategy(false); return; }
@@ -812,10 +841,10 @@ function goStrategy(isHalftime){
   }
   if(isHalftime){
     $('strat-banner').innerHTML=`<div class="sc">${state.score[0]} : ${state.score[1]}</div>
-      <small>DEVRE ARASI · ARTIK ${currentSideForRound(13)==='attack'?'SALDIRIDASIN':'SAVUNMADASIN'}</small>`;
+      <small>DEVRE ARASI · ARTIK ${sideWord(currentSideForRound(13))}</small>`;
     $('strat-go').textContent='Devam Et →';$('strat-go').setAttribute('onclick','resumeFromHalftime()');
   }else{
-    $('strat-banner').innerHTML=`<small>1. YARI · ${state.pTeam?state.pTeam.name:''} · ŞU AN SALDIRIDASIN</small>`;
+    $('strat-banner').innerHTML=`<small>1. YARI · ${state.pTeam?state.pTeam.name:''} · ŞU AN ${sideWord('attack')}</small>`;
     $('strat-go').textContent='Maçı Başlat →';$('strat-go').setAttribute('onclick','confirmStrategy()');
   }
   show('s-strat');
@@ -823,6 +852,7 @@ function goStrategy(isHalftime){
 
 /* ============================== MAÇ MOTORU ============================== */
 function currentSideForRound(r){if(r<=12)return'attack';if(r<=24)return'defense';return((r-25)%2===0)?'attack':'defense';}
+function sideWord(side){return side==='attack'?'<b class="side-w atk">SALDIRIDASIN</b>':'<b class="side-w def">SAVUNMADASIN</b>';}
 function beats(a,b){return(a==='aggressive'&&b==='calm')||(a==='calm'&&b==='normal')||(a==='normal'&&b==='aggressive');}
 function decideBuy(policy,money,wonLast){
   const F={tier:'Full',cost:3900,mult:1.00},H={tier:'Half',cost:2400,mult:0.85},
@@ -881,10 +911,31 @@ function playRound(){
            state.pLoss++;state.pMoney=Math.min(9000,state.pMoney+(state.pLoss>=3?2900:state.pLoss===2?2400:1900)+plantBonus);}
   state.pWonLast=pWon;state.bWonLast=!pWon;
   const topf=W.slice().sort((a,b)=>b.k-a.k)[0];
+  const lstar=L.slice().sort((a,b)=>b.ovr-a.ovr)[0];
   let line=`R${r} · ${side==='attack'?'SLD':'SVN'} · <b>${pWon?state.pTeam.name:state.bTeam.name}</b> aldı`,hl=false;
   if(lK===0){line+=(wK===size?` · ACE? ${topf.n}`:` · FLAWLESS`);hl=true;}
-  state.rounds.push({pWon,line:`${line} <span style="float:right">${state.score[0]}-${state.score[1]}</span>`,hl});
+  const cmt=mkCmt(topf.n,lstar?lstar.n:null,wK,lK,size);
+  state.rounds.push({pWon,line:`${line} <span style="float:right">${state.score[0]}-${state.score[1]}</span>`,hl,cmt});
   state.pBuyTier=pBuy.tier;state.roundsPlayed=r;
+}
+// Spiker yorumu — FPS lugatı (one tap, clutch, flick...); her elde değil
+function mkCmt(tf,ls,wK,lK,size){
+  if(wK>=size&&lK===0)return `🎙 ${tf} ACE! Herkesi tek tek indirdi!`;
+  if(lK>=size-1)return `🎙 ${tf} clutch çevirdi — son adam ayakta kaldı!`;
+  if(Math.random()<0.58)return null;
+  const m=randint(14,42);
+  const pool=[
+    `${tf} ${m} metreden one tap!`,
+    `${tf} kafadan indirdi — tek mermi yetti.`,
+    `${tf} köşeden flick attı, çılgın refleks!`,
+    `${tf} girişte double kill aldı.`,
+    `${tf} smoke içinden vurdu — nasıl gördü?!`,
+    `${tf} bugün formunda, rakip demoralize.`,
+    `${tf} jiggle peek ile bilgiyi aldı, eli koparttı.`,
+    `dry peek cezasız kalmadı — ${tf} bekliyordu.`
+  ];
+  if(ls)pool.push(`${ls} tek başına direndi ama yetmedi.`,`${ls} ne denediyse olmadı — ${tf} duvar gibi.`);
+  return '🎙 '+pick(pool);
 }
 function distributeKills(players,total){if(total<=0)return;
   const w=players.map(p=>Math.pow(p.ovr-58,3)),sum=w.reduce((a,b)=>a+b,0);
@@ -913,7 +964,7 @@ function renderMatch(){
   $('m-pmoney').textContent=state.pMoney;$('m-bmoney').textContent=state.bMoney;
   $('m-buy').textContent=state.pBuyTier?('Alım: '+state.pBuyTier):'';
   $('m-timeline').innerHTML=state.rounds.map((rd,i)=>`<i class="${rd.pWon?'pw':'bw'}${i===11?' half':''}"></i>`).join('');
-  $('m-feed').innerHTML=state.rounds.slice(-8).reverse().map(rd=>`<div class="${rd.hl?'hl':''}">${rd.line}</div>`).join('');
+  $('m-feed').innerHTML=state.rounds.slice(-8).reverse().map(rd=>`<div class="${rd.hl?'hl':''}">${rd.line}</div>`+(rd.cmt?`<div class="cmt">${rd.cmt}</div>`:'')).join('');
 }
 
 /* ============================== SONUÇ ============================== */
@@ -923,6 +974,7 @@ function finishMatch(winner){
   $('r-verdict').textContent=pWon?'ZAFER':'MAĞLUBİYET';$('r-verdict').className='big '+(pWon?'win':'lose');
   const hero=document.querySelector('.result-hero');
   hero.classList.remove('win','lose');void hero.offsetWidth;hero.classList.add(pWon?'win':'lose');
+  const anim=$('r-anim');if(anim)anim.style.display=pWon?'block':'none';   // kutlama animasyonu sadece zaferde
   $('r-psc').textContent=state.score[0];$('r-bsc').textContent=state.score[1];
   const sc=p=>2*p.k+0.8*p.a-0.5*p.d;
   const winT=pWon?state.pTeam:state.bTeam, loseT=pWon?state.bTeam:state.pTeam;
@@ -1361,7 +1413,8 @@ function simRounds(A,B,tA,tB,startR,endR,carry){   // startR..endR arasi el; car
     if(won){pM=Math.min(9000,pM+3000);pL=0;bL++;bM=Math.min(9000,bM+(bL>=3?2900:bL===2?2400:1900));}
     else{bM=Math.min(9000,bM+3000);bL=0;pL++;pM=Math.min(9000,pM+(pL>=3?2900:pL===2?2400:1900));}
     pW=won;bW=!won;
-    rounds.push({pWon:won,side,sa:score[0],sb:score[1]});
+    const tfp=W.slice().sort((x,y)=>y.k-x.k)[0];
+    rounds.push({pWon:won,side,sa:score[0],sb:score[1],tf:tfp?tfp.n:null,wk:wK,lk:lK});
   }
   const outCarry={score:score.slice(),pM,bM,pL,bL,pW,bW,Ap:Ap.map(p=>({k:p.k,d:p.d,a:p.a})),Bp:Bp.map(p=>({k:p.k,d:p.d,a:p.a}))};
   return {rounds,winner:ended(),carry:outCarry,Ap,Bp};
@@ -1434,6 +1487,8 @@ function playbackMP(m){
     setSc('m-psc',rd.sa);setSc('m-bsc',rd.sb);
     $('m-side').textContent=rn+'. EL · '+m.a+' '+(rd.side==='attack'?'SALDIRI':'SAVUNMA');
     $('m-timeline').innerHTML+='<i class="'+(rd.pWon?'pw':'bw')+(rn===12?' half':'')+'"></i>';
+    const cmt=rd.tf?mkCmt(rd.tf,null,rd.wk||0,rd.lk||0,(m.boardA.players||[]).length||5):null;
+    if(cmt)$('m-feed').insertAdjacentHTML('afterbegin','<div class="cmt">'+cmt+'</div>');
     $('m-feed').insertAdjacentHTML('afterbegin','<div>R'+rn+' · <b>'+esc(rd.pWon?m.a:m.b)+'</b> aldı <span style="float:right">'+rd.sa+'-'+rd.sb+'</span></div>');
     state.timer=setTimeout(step,360);
   }
@@ -1448,7 +1503,7 @@ function halftimePause(m){   // 1. yari bitti: kapisanlar strateji verir, izleyi
 }
 function goHalftimeMP(m,side){
   renderSeg('style','seg-style');renderSeg('focus','seg-focus');renderSeg('entry','seg-entry');renderSeg('spend','seg-spend');
-  $('strat-banner').innerHTML='<div class="sc">'+m.score[0]+' : '+m.score[1]+'</div><small>DEVRE ARASI · ARTIK '+(side==='attack'?'SALDIRIDASIN':'SAVUNMADASIN')+'</small>';
+  $('strat-banner').innerHTML='<div class="sc">'+m.score[0]+' : '+m.score[1]+'</div><small>DEVRE ARASI · ARTIK '+sideWord(side)+'</small>';
   $('strat-timer').style.display=''; $('strat-go').disabled=false; $('strat-go').textContent='Devam →'; $('strat-go').setAttribute('onclick','saveHalftimeMP()');
   startHalftimeTimer((room.data&&room.data.select_time)||30); show('s-strat');
 }
