@@ -300,6 +300,9 @@
   .rk{display:inline-block;font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;
     color:var(--rkc);border:1px solid var(--rkc);padding:3px 12px;border-radius:2px;text-shadow:0 0 12px var(--rkc);background:var(--inset)}
   .rk.big{font-size:22px;padding:6px 20px;letter-spacing:2.5px}
+  .rk-bar{height:9px;background:var(--inset);border:1px solid var(--line);border-radius:20px;overflow:hidden;max-width:280px;margin:14px auto 0}
+  .rk-bar > i{display:block;height:100%;width:38%;border-radius:20px;background:linear-gradient(90deg,var(--red),var(--teal));animation:rkslide 1.25s ease-in-out infinite}
+  @keyframes rkslide{0%{margin-left:-40%}100%{margin-left:102%}}
   #avatar-overlay{position:fixed;inset:0;z-index:130;display:none;align-items:flex-start;justify-content:center;padding:60px 14px;
     overflow-y:auto;background:rgba(6,10,14,.8);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
   #avatar-overlay.open{display:flex;animation:fade .25s ease}
@@ -502,8 +505,8 @@
   <!-- CHAMPION -->
   <section id="s-champion" class="screen">
     <div class="center" style="padding-top:30px">
-      <div style="font-size:64px">🏆</div>
-      <div style="font-size:14px;color:var(--muted);letter-spacing:3px">ŞAMPİYON</div>
+      <div id="champ-trophy" style="font-size:64px">🏆</div>
+      <div id="champ-label" style="font-size:16px;color:var(--muted);letter-spacing:3px;font-weight:700">ŞAMPİYON</div>
       <div id="champ-name" style="font-size:42px;font-weight:900;color:var(--gold);margin:8px 0"></div>
       <div id="champ-rr" class="mt" style="font-size:15px"></div>
       <div id="champ-bracket" class="note" style="line-height:1.8"></div>
@@ -1443,22 +1446,40 @@ async function rankedCancel(){
   $('rk-find').style.display='';$('rk-cancel').style.display='none';$('rk-status').textContent='';
 }
 function rankedBack(){rankedCancel();show('s-landing');}
+function rankedConnecting(ready){
+  show('s-ranked');
+  $('rk-find').style.display='none'; $('rk-cancel').style.display='none';
+  $('rk-status').innerHTML=(ready
+    ? '⚔️ <b style="color:var(--teal)">Rakip bulundu — maç başlıyor…</b>'
+    : '⏳ <b>Rakip bağlanıyor, lütfen bekle…</b>')
+    +'<div class="rk-bar"><i></i></div>';
+}
 async function rankedEnter(d){
-  state._rrApplied=null;
+  state._rrApplied=null; rankedConnecting(false);
   if(d.host){
     const {error}=await sb.from('rooms').insert({code:d.code,host:state.username,team_size:5,select_time:45,max_players:2,status:'lobby',ranked:true});
     if(error){toast('Oda kurulamadı — tekrar dene.');startRanked();return;}
     await sb.from('room_players').insert({room_code:d.code,name:state.username,is_host:true});
-    room={code:d.code,isHost:true,me:state.username,chan:null,data:null,_started:false};
-    enterLobby();
+    room={code:d.code,isHost:true,me:state.username,chan:null,data:null,_started:false,ranked:true};
   }else{
     let r=null;
-    for(let i=0;i<10;i++){const q=await sb.from('rooms').select('*').eq('code',d.code).maybeSingle();r=q.data;if(r)break;await new Promise(z=>setTimeout(z,700));}
+    for(let i=0;i<12;i++){const q=await sb.from('rooms').select('*').eq('code',d.code).maybeSingle();r=q.data;if(r)break;await new Promise(z=>setTimeout(z,700));}
     if(!r){toast('Rakip odayı kuramadı — tekrar dene.');startRanked();return;}
     await sb.from('room_players').insert({room_code:d.code,name:state.username,is_host:false});
-    room={code:d.code,isHost:false,me:state.username,chan:null,data:null,_started:false};
-    enterLobby();
+    room={code:d.code,isHost:false,me:state.username,chan:null,data:null,_started:false,ranked:true};
   }
+  subscribeRoom(); refreshRanked();
+}
+async function refreshRanked(){
+  if(!room.code||!sb)return;
+  const {data:r}=await sb.from('rooms').select('*').eq('code',room.code).maybeSingle();
+  if(!r){ toast('Oda kapandı — tekrar dene.'); return startRanked(); }
+  room.data=r; state.teamSize=r.team_size;
+  if(r.status!=='lobby')return;                    // draft/playing → onRoom devralır
+  const {data:ps}=await sb.from('room_players').select('name').eq('room_code',room.code);
+  const n=(ps||[]).length;
+  rankedConnecting(n>=2);
+  if(room.isHost && n>=2 && !room._rkAuto){ room._rkAuto=true; setTimeout(startRoomMatch,700); }
 }
 async function applyRankedResult(champ){
   if(!authUser||!state.username||!sb)return;
@@ -1544,12 +1565,6 @@ async function refreshLobby(){
   $('lobby-code').textContent=r.code; $('lobby-max').textContent=r.max_players; $('lobby-maxnote').textContent=r.max_players; $('lobby-count').textContent=list.length;
   $('lobby-players').innerHTML=list.map(p=>`<div style="padding:7px 0;border-bottom:1px solid var(--line)">${p.is_host?'👑 ':'👤 '}<b>${esc(p.name)}</b>${p.name===room.me?' <span style="color:var(--teal)">(sen)</span>':''}</div>`).join('');
   const b=$('lobby-start');
-  if(r.ranked){
-    b.style.display='none';
-    $('lobby-hint').textContent=list.length<2?'⚔️ Dereceli — rakip odaya bağlanıyor…':'⚔️ Dereceli maç başlıyor!';
-    if(room.isHost&&list.length>=2&&r.status==='lobby'&&!room._rkAuto){room._rkAuto=true;setTimeout(startRoomMatch,900);}
-    return;
-  }
   if(room.isHost){ b.style.display=''; b.disabled=list.length<2; $('lobby-hint').textContent=list.length<2?'En az 2 oyuncu bekleniyor...':'Herkes geldi, başlatabilirsin!'; }
   else { b.style.display='none'; $('lobby-hint').textContent='Host başlatmayı bekliyor...'; }
 }
@@ -1609,7 +1624,9 @@ function simRounds(A,B,tA,tB,startR,endR,carry){   // startR..endR arasi el; car
     else{bM=Math.min(9000,bM+3000);bL=0;pL++;pM=Math.min(9000,pM+(pL>=3?2900:pL===2?2400:1900));}
     pW=won;bW=!won;
     const tfp=W.slice().sort((x,y)=>y.k-x.k)[0];
-    rounds.push({pWon:won,side,sa:score[0],sb:score[1],tf:tfp?tfp.n:null,wk:wK,lk:lK});
+    const lsp=L.slice().sort((x,y)=>y.ovr-x.ovr)[0];
+    const cmt=mkCmt(tfp?tfp.n:null,lsp?lsp.n:null,wK,lK,size,side);   // host üretir → iki istemci de AYNI metni okur
+    rounds.push({pWon:won,side,sa:score[0],sb:score[1],cmt});
   }
   const outCarry={score:score.slice(),pM,bM,pL,bL,pW,bW,Ap:Ap.map(p=>({k:p.k,d:p.d,a:p.a})),Bp:Bp.map(p=>({k:p.k,d:p.d,a:p.a}))};
   return {rounds,winner:ended(),carry:outCarry,Ap,Bp};
@@ -1682,8 +1699,7 @@ function playbackMP(m){
     setSc('m-psc',rd.sa);setSc('m-bsc',rd.sb);
     $('m-side').textContent=rn+'. EL · '+m.a+' '+(rd.side==='attack'?'SALDIRI':'SAVUNMA');
     $('m-timeline').innerHTML+='<i class="'+(rd.pWon?'pw':'bw')+(rn===12?' half':'')+'"></i>';
-    const cmt=rd.tf?mkCmt(rd.tf,null,rd.wk||0,rd.lk||0,(m.boardA.players||[]).length||5,rd.side):null;
-    if(cmt)$('m-feed').insertAdjacentHTML('afterbegin','<div class="cmt">'+cmt+'</div>');
+    if(rd.cmt)$('m-feed').insertAdjacentHTML('afterbegin','<div class="cmt">'+esc(rd.cmt)+'</div>');
     $('m-feed').insertAdjacentHTML('afterbegin','<div>R'+rn+' · <b>'+esc(rd.pWon?m.a:m.b)+'</b> aldı <span style="float:right">'+rd.sa+'-'+rd.sb+'</span></div>');
     state.timer=setTimeout(step,360);
   }
@@ -1719,10 +1735,21 @@ function endPlayback(m){
 }
 function showChampion(name){
   clearTimeout(state.timer);
-  $('champ-name').textContent=name||'?';
+  const ranked=room.data&&room.data.ranked, nm=$('champ-name');
+  if(ranked){
+    const iWon=name===state.username;
+    $('champ-trophy').textContent=iWon?'🏆':'☠️';
+    $('champ-label').textContent=iWon?'KAZANAN':'KAYBEDEN';
+    $('champ-label').style.color=iWon?'var(--teal)':'var(--red)';
+    nm.textContent=state.username; nm.style.color=iWon?'var(--teal)':'var(--red)';
+  }else{
+    $('champ-trophy').textContent='🏆';
+    $('champ-label').textContent='ŞAMPİYON'; $('champ-label').style.color='var(--muted)';
+    nm.textContent=name||'?'; nm.style.color='var(--gold)';
+  }
   $('champ-rr').innerHTML='';
-  if(room.data&&room.data.ranked)applyRankedResult(name);
-  const log=(room.data&&room.data.state&&room.data.state.bracket&&room.data.state.bracket.log)||[];
+  if(ranked)applyRankedResult(name);
+  const log=(!ranked&&room.data&&room.data.state&&room.data.state.bracket&&room.data.state.bracket.log)||[];
   $('champ-bracket').innerHTML=log.map(l=>'<div>'+esc(l)+'</div>').join('');
   show('s-champion');
 }
@@ -1757,7 +1784,7 @@ async function renderWait(ps){
 function onRoom(r){
   if(!r){ if(!room.isHost)alert('Oda kapandı.'); return leaveRoomLocal(); }
   room.data=r;
-  if(r.status==='lobby') refreshLobby();
+  if(r.status==='lobby'){ room.ranked?refreshRanked():refreshLobby(); }
   else if(r.status==='draft'){ if(!state.mpDrafting) enterDraft(r); }
   else if(r.status==='playing') watchMatch(r);
   else if(r.status==='done') showChampion(r.state&&r.state.champion);
@@ -1766,7 +1793,7 @@ async function onRoomChange(){ if(!room.code||!sb)return; const {data:r}=await s
 async function pushRoom(patch){ await sb.from('rooms').update(patch).eq('code',room.code); onRoomChange(); }
 async function onPlayers(){
   const st=room.data&&room.data.status;
-  if(st==='lobby'){ refreshLobby(); return; }
+  if(st==='lobby'){ room.ranked?refreshRanked():refreshLobby(); return; }
   if(st==='draft'){ const {data:ps}=await sb.from('room_players').select('name,ready').eq('room_code',room.code);
     renderWait(ps); if(room.isHost && ps.length>=2 && ps.every(p=>p.ready)) startBracket(ps); return; }
   if(st==='playing' && room.isHost){   // devre arasi: iki kapisan da 2. yari taktigini verdiyse devam
