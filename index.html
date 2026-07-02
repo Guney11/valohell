@@ -173,7 +173,7 @@
   tr.me{background:rgba(24,227,179,.12);box-shadow:inset 3px 0 0 var(--teal)}
   .badge{font-family:var(--cond);font-size:10px;font-weight:700;padding:2px 7px;border-radius:2px;background:var(--gold);color:#3a2c00;margin-left:6px;letter-spacing:.5px}
   .badge.svp{background:#aeb6c2;color:#1a1d22}
-  .result-hero{text-align:center;padding:14px 0 20px}
+  .result-hero{text-align:center;padding:14px 0 20px;position:relative}
   .result-hero .big{font-family:var(--disp);font-size:64px;font-weight:700;letter-spacing:4px;line-height:.95}
   .result-hero .p,.result-hero .b{font-family:var(--disp);font-weight:700}
   .result-hero .p{color:var(--teal)} .result-hero .b{color:var(--red)}
@@ -294,8 +294,9 @@
   #b-pickpanel.cin{animation:candIn .3s ease}
   @keyframes candIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
   .feed .cmt{color:var(--gold);font-size:12px;font-style:italic;opacity:.9;padding:3px 0 7px}
-  #r-anim{width:210px;height:210px;margin:-10px auto -22px;display:none;pointer-events:none}
-  @media(max-width:560px){#r-anim{width:150px;height:150px}}
+  #r-anim{position:absolute;left:50%;top:-46px;transform:translateX(-50%);width:min(640px,98vw);height:380px;
+    display:none;pointer-events:none;z-index:2}                 /* konfeti ZAFER'in üzerine yağar, tıklamayı engellemez */
+  @media(max-width:560px){#r-anim{width:98vw;height:300px;top:-30px}}
 </style>
 </head>
 <body>
@@ -914,28 +915,62 @@ function playRound(){
   const lstar=L.slice().sort((a,b)=>b.ovr-a.ovr)[0];
   let line=`R${r} · ${side==='attack'?'SLD':'SVN'} · <b>${pWon?state.pTeam.name:state.bTeam.name}</b> aldı`,hl=false;
   if(lK===0){line+=(wK===size?` · ACE? ${topf.n}`:` · FLAWLESS`);hl=true;}
-  const cmt=mkCmt(topf.n,lstar?lstar.n:null,wK,lK,size);
+  const cmt=mkCmt(topf.n,lstar?lstar.n:null,wK,lK,size,side);
   state.rounds.push({pWon,line:`${line} <span style="float:right">${state.score[0]}-${state.score[1]}</span>`,hl,cmt});
   state.pBuyTier=pBuy.tier;state.roundsPlayed=r;
 }
-// Spiker yorumu — FPS lugatı (one tap, clutch, flick...); her elde değil
-function mkCmt(tf,ls,wK,lK,size){
-  if(wK>=size&&lK===0)return `🎙 ${tf} ACE! Herkesi tek tek indirdi!`;
-  if(lK>=size-1)return `🎙 ${tf} clutch çevirdi — son adam ayakta kaldı!`;
-  if(Math.random()<0.58)return null;
+// Spiker yorumu — FPS lugatı; her elde değil, son 6 kalıp tekrar etmez
+let _cmtHist=[];
+function mkCmt(tf,ls,wK,lK,size,side){
+  if(wK>=size&&lK===0)return '🎙 '+pick([
+    `${tf} ACE! Herkesi tek tek indirdi!`,
+    `${tf} SAHNEDE — ACE! Bu el maç tarihine geçer!`,
+    `inanılmaz... ${tf} hepsini aldı, A-C-E!`]);
+  if(lK>=size-1)return '🎙 '+pick([
+    `${tf} clutch çevirdi — son adam ayakta kaldı!`,
+    `${tf} 1vX'i çevirdi, damarlarında buz var!`,
+    `kimse inanamıyor — ${tf} kaybedilmiş eli tek başına kurtardı!`]);
+  if(Math.random()<0.55)return null;
   const m=randint(14,42);
-  const pool=[
-    `${tf} ${m} metreden one tap!`,
-    `${tf} kafadan indirdi — tek mermi yetti.`,
-    `${tf} köşeden flick attı, çılgın refleks!`,
-    `${tf} girişte double kill aldı.`,
-    `${tf} smoke içinden vurdu — nasıl gördü?!`,
-    `${tf} bugün formunda, rakip demoralize.`,
-    `${tf} jiggle peek ile bilgiyi aldı, eli koparttı.`,
-    `dry peek cezasız kalmadı — ${tf} bekliyordu.`
+  const defs=[
+    ['onetap',   `${tf} ${m} metreden one tap!`],
+    ['head',     `${tf} kafadan indirdi — tek mermi yetti.`],
+    ['flick',    `${tf} köşeden flick attı, çılgın refleks!`],
+    ['double',   `${tf} girişte double kill aldı.`],
+    ['smoke',    `${tf} smoke içinden vurdu — nasıl gördü?!`],
+    ['form',     `${tf} bugün formunda, rakip demoralize.`],
+    ['jiggle',   `${tf} jiggle peek ile bilgiyi aldı, eli koparttı.`],
+    ['drypeek',  `dry peek cezasız kalmadı — ${tf} bekliyordu.`],
+    ['wallbang', `${tf} wallbang ile duvar arkasından sürpriz kill!`],
+    ['prefire',  `${tf} prefire ile köşeyi temizledi.`],
+    ['spray',    `${tf} spray transfer ile iki kişiyi biçti.`],
+    ['lurk',     `${tf} sessizce arkadan dolandı — kimse görmedi!`],
+    ['op',       `${tf} keskin nişancıyla orta koridoru kilitledi.`],
+    ['xhair',    `${tf} crosshair placement dersi veriyor.`],
+    ['trade',    `trade'ler mükemmel — ${tf} takım oyununu konuşturdu.`],
+    ['flash',    `flash'ın arkasından giren ${tf} ikiliyi aldı.`],
+    ['pistol',   `${tf} tabancayla bile durdurulamıyor!`],
+    ['reflex',   `bu ne refleks ${tf}?! İzleyiciler ayakta.`],
+    ['util',     `util kullanımı ders niteliğinde — ${tf} yönetti.`],
+    ['anchor',   `${tf} site'ı tek başına tuttu, geçit yok.`]
   ];
-  if(ls)pool.push(`${ls} tek başına direndi ama yetmedi.`,`${ls} ne denediyse olmadı — ${tf} duvar gibi.`);
-  return '🎙 '+pick(pool);
+  if(side==='attack')defs.push(
+    ['plant',  `bomba son saniyede kuruldu — ${tf} baskıya dayandı.`],
+    ['exec',   `site execute'u kusursuzdu, ${tf} önden açtı.`],
+    ['fake',   `fake çağrısı tuttu — ${tf} boş site'a girdi.`]);
+  else defs.push(
+    ['hold',   `savunma duvar gibi — ${tf} geçit vermedi.`],
+    ['retake', `retake dersi! ${tf} önde savaştı.`],
+    ['ninja',  `ninja defuse denemesi ${tf} tarafından kesildi.`]);
+  if(wK>=4)defs.push(['4k',`${tf} ${wK}K bıraktı — koç ayakta alkışlıyor!`]);
+  if(ls)defs.push(
+    ['resist', `${ls} tek başına direndi ama yetmedi.`],
+    ['denied', `${ls} highlight denedi, ${tf} izin vermedi.`],
+    ['panic',  `${ls} cephesinde işler kötü — koç mola isteyebilir.`]);
+  const avail=defs.filter(d=>!_cmtHist.includes(d[0]));
+  const d=pick(avail.length?avail:defs);
+  _cmtHist.push(d[0]); if(_cmtHist.length>6)_cmtHist.shift();
+  return '🎙 '+d[1];
 }
 function distributeKills(players,total){if(total<=0)return;
   const w=players.map(p=>Math.pow(p.ovr-58,3)),sum=w.reduce((a,b)=>a+b,0);
@@ -1487,7 +1522,7 @@ function playbackMP(m){
     setSc('m-psc',rd.sa);setSc('m-bsc',rd.sb);
     $('m-side').textContent=rn+'. EL · '+m.a+' '+(rd.side==='attack'?'SALDIRI':'SAVUNMA');
     $('m-timeline').innerHTML+='<i class="'+(rd.pWon?'pw':'bw')+(rn===12?' half':'')+'"></i>';
-    const cmt=rd.tf?mkCmt(rd.tf,null,rd.wk||0,rd.lk||0,(m.boardA.players||[]).length||5):null;
+    const cmt=rd.tf?mkCmt(rd.tf,null,rd.wk||0,rd.lk||0,(m.boardA.players||[]).length||5,rd.side):null;
     if(cmt)$('m-feed').insertAdjacentHTML('afterbegin','<div class="cmt">'+cmt+'</div>');
     $('m-feed').insertAdjacentHTML('afterbegin','<div>R'+rn+' · <b>'+esc(rd.pWon?m.a:m.b)+'</b> aldı <span style="float:right">'+rd.sa+'-'+rd.sb+'</span></div>');
     state.timer=setTimeout(step,360);
