@@ -510,7 +510,10 @@
       <div id="champ-name" style="font-size:42px;font-weight:900;color:var(--gold);margin:8px 0"></div>
       <div id="champ-rr" class="mt" style="font-size:15px"></div>
       <div id="champ-bracket" class="note" style="line-height:1.8"></div>
-      <button class="btn mt" onclick="leaveRoom()">Bitir</button>
+      <div class="center mt row" style="justify-content:center">
+        <button class="btn" id="champ-again" style="display:none"></button>
+        <button class="btn ghost" onclick="leaveRoom()">Bitir</button>
+      </div>
     </div>
   </section>
 
@@ -1554,6 +1557,11 @@ function subscribeRoom(){
     .on('postgres_changes',{event:'*',schema:'public',table:'room_players',filter:'room_code=eq.'+room.code},onPlayers)
     .on('postgres_changes',{event:'*',schema:'public',table:'rooms',filter:'code=eq.'+room.code},onRoomChange)
     .subscribe();
+  startMpPoll();
+}
+function startMpPoll(){   // realtime olayi kaçsa bile geçişler ilerlesin — yedek yoklama (host başlatma, devre arası, rövanş)
+  clearInterval(state._mpPoll);
+  state._mpPoll=setInterval(()=>{ if(!room.code){clearInterval(state._mpPoll);return;} onRoomChange(); onPlayers(); },2500);
 }
 async function refreshLobby(){
   if(!room.code||!sb)return;
@@ -1569,11 +1577,12 @@ async function refreshLobby(){
   else { b.style.display='none'; $('lobby-hint').textContent='Host başlatmayı bekliyor...'; }
 }
 async function startRoomMatch(){ if(!room.isHost)return; await pushRoom({status:'draft',state:{phase:'draft'}}); }
-function leaveRoomLocal(){ if(room.chan)sb.removeChannel(room.chan); clearInterval(state.dtInt);clearTimeout(state.timer);state.mp=false;state.mpDrafting=false;state._ready=false; room={code:null,isHost:false,me:null,chan:null,data:null,_started:false}; show('s-landing'); }
+function leaveRoomLocal(){ if(room.chan)sb.removeChannel(room.chan); clearInterval(state.dtInt);clearInterval(state._mpPoll);clearTimeout(state.timer);state.mp=false;state.mpDrafting=false;state._ready=false; room={code:null,isHost:false,me:null,chan:null,data:null,_started:false}; show('s-landing'); }
 async function leaveRoom(){
   const r=room; if(r.chan)sb.removeChannel(r.chan);
+  clearInterval(state.dtInt);clearInterval(state._mpPoll);clearTimeout(state.timer);
   if(r.code&&r.me&&sb){ try{ await sb.from('room_players').delete().eq('room_code',r.code).eq('name',r.me); if(r.isHost) await sb.from('rooms').delete().eq('code',r.code);}catch(e){} }
-  clearInterval(state.dtInt);clearTimeout(state.timer);state.mp=false;state.mpDrafting=false;state._ready=false;
+  state.mp=false;state.mpDrafting=false;state._ready=false;
   room={code:null,isHost:false,me:null,chan:null,data:null,_started:false}; show('s-landing');
 }
 
@@ -1735,6 +1744,8 @@ function endPlayback(m){
 }
 function showChampion(name){
   clearTimeout(state.timer);
+  if(room._champ===name && $('s-champion').classList.contains('active')) return;   // poll tekrar çağırınca butonları sıfırlamasın
+  room._champ=name; state.mpDrafting=false;
   const ranked=room.data&&room.data.ranked, nm=$('champ-name');
   if(ranked){
     const iWon=name===state.username;
@@ -1749,12 +1760,41 @@ function showChampion(name){
   }
   $('champ-rr').innerHTML='';
   if(ranked)applyRankedResult(name);
+  const ag=$('champ-again');
+  if(ranked){ ag.style.display='';ag.disabled=false;ag.textContent='🔁 Rövanş';ag.setAttribute('onclick','rankedRematch()'); }
+  else if(room.isHost){ ag.style.display='';ag.disabled=false;ag.textContent='🔄 Tekrar Başlat';ag.setAttribute('onclick','restartRoom()'); }
+  else ag.style.display='none';
   const log=(!ranked&&room.data&&room.data.state&&room.data.state.bracket&&room.data.state.bracket.log)||[];
   $('champ-bracket').innerHTML=log.map(l=>'<div>'+esc(l)+'</div>').join('');
   show('s-champion');
 }
+async function restartRoom(){    // ARKADAŞ: host herkesi yeniden kadro seçimine alır
+  if(!room.isHost||!room.code)return;
+  const b=$('champ-again'); if(b){b.disabled=true;b.textContent='⌛ Başlatılıyor…';}
+  await sb.from('room_players').update({team:null,tactics:null,t2:null,result:null,ready:false}).eq('room_code',room.code);
+  room._bs=false;room._rkAuto=false;room._pmId=null;room._cont=null;room._champ=null;
+  await pushRoom({status:'draft',state:{phase:'draft'}});
+}
+async function rankedRematch(){  // DERECELİ: iki taraf da basarsa yeni maç (aynı kişiler, kadro seçiminden)
+  if(!room.code)return;
+  const b=$('champ-again'); if(b){b.disabled=true;b.textContent='⌛ Rakip bekleniyor…';}
+  await sb.from('room_players').update({result:{rematch:true}}).eq('room_code',room.code).eq('name',room.me);
+  if(room.isHost) checkRematch();
+}
+async function checkRematch(){
+  if(!room.isHost||!room.code)return;
+  const {data:ps}=await sb.from('room_players').select('name,result').eq('room_code',room.code);
+  if(!ps)return;
+  if(ps.length<2){ const b=$('champ-again'); if(b&&b.disabled){b.disabled=false;b.textContent='🔁 Rövanş';toast('Rakip ayrıldı — rövanş iptal.');} return; }
+  if(ps.every(p=>p.result&&p.result.rematch)){
+    await sb.from('room_players').update({team:null,tactics:null,t2:null,result:null,ready:false}).eq('room_code',room.code);
+    room._bs=false;room._rkAuto=false;room._pmId=null;room._cont=null;room._champ=null;state._rrApplied=null;
+    await pushRoom({status:'draft',state:{phase:'draft'}});
+  }
+}
 function enterDraft(r){
   state.mp=true;state.mpDrafting=true;state._ready=false;
+  room._bs=false;room._champ=null;room._pmId=null;room._cont=null;   // yeni maç/rövanş için sıfırla
   state.teamSize=r.team_size; state.tactics={style:'normal',focus:'balanced',entry:'normal',spend:'normal'};
   resetBuilder(); show('s-builder'); $('draft-timer').style.display='';
   startDraftTimer(r.select_time||30);
@@ -1801,6 +1841,7 @@ async function onPlayers(){
     if(cm&&cm.half===1){ const {data:ps}=await sb.from('room_players').select('name,t2').eq('room_code',room.code).in('name',[cm.a,cm.b]);
       if(ps&&ps.length===2&&ps.every(p=>p.t2&&p.t2.mid===cm.id)) continueMatch(); }
   }
+  if(st==='done'){ if(room.isHost) checkRematch(); return; }   // rövanş: iki taraf da bastıysa yeni maç
 }
 
 applyTheme();updateNewsDot();renderHomeLB();initAuth();
