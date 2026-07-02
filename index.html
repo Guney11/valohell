@@ -296,6 +296,17 @@
   #b-pickpanel.cin{animation:candIn .3s ease}
   @keyframes candIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
   .feed .cmt{color:var(--cmt);font-size:12px;font-style:italic;opacity:.9;padding:3px 0 7px}
+  /* ============ DERECELI / AVATAR ============ */
+  .rk{display:inline-block;font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;
+    color:var(--rkc);border:1px solid var(--rkc);padding:3px 12px;border-radius:2px;text-shadow:0 0 12px var(--rkc);background:var(--inset)}
+  .rk.big{font-size:22px;padding:6px 20px;letter-spacing:2.5px}
+  #avatar-overlay{position:fixed;inset:0;z-index:130;display:none;align-items:flex-start;justify-content:center;padding:60px 14px;
+    overflow-y:auto;background:rgba(6,10,14,.8);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+  #avatar-overlay.open{display:flex;animation:fade .25s ease}
+  .av-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+  .av-grid button{font-size:30px;padding:12px 0;background:var(--inset);border:1px solid var(--line);border-radius:4px;cursor:pointer;transition:.15s;line-height:1}
+  .av-grid button:hover{border-color:var(--red);transform:translateY(-2px)}
+  .av-grid button.sel{border-color:var(--teal);box-shadow:0 0 0 2px rgba(24,227,179,.35)}
   #r-anim{position:absolute;left:50%;top:-46px;transform:translateX(-50%);width:min(640px,98vw);height:380px;
     display:none;pointer-events:none;z-index:2}                 /* konfeti ZAFER'in üzerine yağar, tıklamayı engellemez */
   @media(max-width:560px){#r-anim{width:98vw;height:300px;top:-30px}}
@@ -309,6 +320,15 @@
 </div>
 <div id="profile-menu"></div>
 <div id="vh-toast"></div>
+
+<!-- AVATAR SECICI -->
+<div id="avatar-overlay" onclick="if(event.target===this)closeAvatarPick()">
+  <div class="auth" role="dialog" aria-modal="true" aria-label="Avatar sec">
+    <button class="nw-close" onclick="closeAvatarPick()" aria-label="Kapat">✕</button>
+    <div class="auth-sub" style="margin-top:4px">Avatarını Seç</div>
+    <div class="av-grid" id="av-grid"></div>
+  </div>
+</div>
 
 <!-- GIRIS / KAYIT -->
 <div id="auth-overlay" onclick="if(event.target===this)closeAuth()">
@@ -342,12 +362,18 @@
     <div class="nw-cols">
       <section>
         <div class="nw-kicker">Yakında</div>
-        <div class="nw-item"><h4>Lig sistemi</h4><p>Kullanıcı adı ve şifreyle giriş, puan toplama, Demir'den Radiant'a rütbeler ve sezonlar.</p></div>
-        <div class="nw-item"><h4>Hesapla giriş</h4><p>Buluta kayıtlı profil, istatistik ve maç geçmişi — her cihazdan aynı hesap.</p></div>
-        <div class="nw-item"><h4>Ses & animasyon</h4><p>Tur geçişleri, skor efektleri ve maç atmosferi için cila turu.</p></div>
+        <div class="nw-item"><h4>Google ile giriş</h4><p>Tek tıkla Google hesabınla kayıt ve giriş.</p></div>
+        <div class="nw-item"><h4>Reklamla ekstra hak</h4><p>Reroll hakların bitince kısa bir reklam izleyip yeni hak kazan.</p></div>
+        <div class="nw-item"><h4>İstatistik & maç geçmişi</h4><p>Profilinde geçmiş maçların, kazanma oranın ve en iyi kadroların.</p></div>
       </section>
       <section>
         <div class="nw-kicker">Güncellemeler</div>
+        <div class="nw-ver-row">v0.7</div>
+        <ul class="nw-log">
+          <li><b class="tg new">Yeni</b>DERECELİ MOD — rakip bul, RR kazan, Demir 1'den Radyant'a tırman.</li>
+          <li><b class="tg new">Yeni</b>Avatar seçimi ve profilde rütbe gösterimi.</li>
+          <li><b class="tg imp">İyileştirme</b>Site artık tamamen HTTPS (güvenli bağlantı).</li>
+        </ul>
         <div class="nw-ver-row">v0.6</div>
         <ul class="nw-log">
           <li><b class="tg new">Yeni</b>Maç içi spiker yorumları — one tap, clutch, ace anları anlatılıyor.</li>
@@ -389,17 +415,17 @@
   <!-- LANDING -->
   <section id="s-landing" class="screen active">
     <div class="logo">VALO<span>HELL</span></div>
-    <div class="sub">Namağlup şampiyon olabilecek misin?</div>
+    <div class="sub">Kadronu kur · Stratejini seç · Kupayı kaldır</div>
     <div class="mode-grid">
       <div class="mode" onclick="startOnline()">
         <div class="tag">BOTLARA KARŞI</div>
         <div class="big">ONLINE</div>
         <div class="desc">Kadronu kur, taktiğini belirle, sıralama için savaş. Lider tablosuna tırman.</div>
       </div>
-      <div class="mode locked" onclick="derecelSoon()">
-        <div class="tag">YAKINDA</div>
+      <div class="mode" onclick="startRanked()">
+        <div class="tag">1v1 REKABET</div>
         <div class="big">DERECELİ</div>
-        <div class="desc">Hesabını aç, rütbe kazan (Demir → Radyant), sıralamada yüksel. Yeterli oyuncu olunca açılacak.</div>
+        <div class="desc">Rakip bul, maçı kazan, RR topla. Demir'den Radyant'a tırman — herkes Demir 1'den başlar.</div>
       </div>
       <div class="mode" onclick="startLocal()">
         <div class="tag">ARKADAŞLARLA</div>
@@ -479,6 +505,7 @@
       <div style="font-size:64px">🏆</div>
       <div style="font-size:14px;color:var(--muted);letter-spacing:3px">ŞAMPİYON</div>
       <div id="champ-name" style="font-size:42px;font-weight:900;color:var(--gold);margin:8px 0"></div>
+      <div id="champ-rr" class="mt" style="font-size:15px"></div>
       <div id="champ-bracket" class="note" style="line-height:1.8"></div>
       <button class="btn mt" onclick="leaveRoom()">Bitir</button>
     </div>
@@ -540,6 +567,20 @@
       <div class="dial"><div class="t">💰 Para Harcama</div><div class="seg" id="seg-spend"></div></div>
     </div>
     <div class="center mt"><button class="btn" id="strat-go" onclick="confirmStrategy()">Maçı Başlat →</button></div>
+  </section>
+
+  <!-- RANKED -->
+  <section id="s-ranked" class="screen">
+    <div class="topbar"><div class="home" onclick="rankedBack()">VALO<span>HELL</span></div></div>
+    <div class="card center" style="max-width:520px;margin:0 auto;padding:26px 22px">
+      <div id="rk-me"></div>
+      <div id="rk-status" class="mt" style="min-height:24px"></div>
+      <div class="center mt row" style="justify-content:center">
+        <button class="btn" id="rk-find" onclick="rankedSearch()">⚔️ RAKİP ARA</button>
+        <button class="btn ghost" id="rk-cancel" onclick="rankedCancel()" style="display:none">Vazgeç</button>
+      </div>
+      <div class="note mt" style="font-size:12px">5v5 · İki yarı · Galibiyet +20 RR (+fark bonusu) · Mağlubiyet −15 RR</div>
+    </div>
   </section>
 
   <!-- MATCH -->
@@ -645,7 +686,7 @@ function toggleTheme(){const cur=localStorage.getItem('val_theme')||'dark';
   localStorage.setItem('val_theme',cur==='dark'?'light':'dark');applyTheme();}
 
 /* ============================== YAKINDA / GAZETE ============================== */
-const NEWS_VER='v0.6';
+const NEWS_VER='v0.7';
 function updateNewsDot(){const d=$('news-dot');if(d)d.style.display=(localStorage.getItem('val_news_seen')===NEWS_VER)?'none':'inline-block';
   const v=$('nw-ver');if(v)v.textContent='Sürüm '+NEWS_VER.replace('v','');}
 function openNews(){
@@ -713,7 +754,6 @@ const state={teamSize:5,username:'',selected:[],teamReroll:3,classReroll:3,candi
 
 /* ============================== SETUP ============================== */
 function startOnline(){state.mp=false;state.mpDrafting=false;show('s-setup');}
-function derecelSoon(){ const m=$('mode-msg'); if(!m)return; m.innerHTML='🔒 <b>Dereceli mod yakında!</b> Yeterli oyuncu olunca açılacak — hesap, rütbe (Demir → Radyant) ve global sıralama geliyor.'; clearTimeout(state._dsm); state._dsm=setTimeout(()=>{m.innerHTML='';},6000); }
 function pickSize(v,el){el.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));el.classList.add('on');state.teamSize=v;}
 function confirmSetup(){ resetBuilder();show('s-builder'); }   // isim sonda sorulur
 
@@ -1249,7 +1289,7 @@ async function authSubmit(){
       }
       const finalName=await ensureProfile(user,uname);
       if(!finalName){err.textContent='Profil oluşturulamadı — tekrar dene.';return;}
-      authUser=user;state.username=finalName;
+      authUser=user;state.username=finalName;state.myRR=0;state.myAvatar=null;   // herkes Demir 1'den başlar
       refreshAuthUI();closeAuth();toast('Hoş geldin, '+finalName+'! 🎉');
       flushPending();
     }else{
@@ -1287,8 +1327,8 @@ async function handleAuthSession(session){
   if(authUser&&authUser.id===session.user.id&&state.username)return;   // zaten yüklü
   if(_regInProgress){authUser=session.user;return;}                    // kayıt akışı profili kendisi yazar
   authUser=session.user;
-  const {data:p}=await sb.from('profiles').select('username').eq('id',authUser.id).maybeSingle();
-  if(p){state.username=p.username;refreshAuthUI();flushPending();}
+  const {data:p}=await sb.from('profiles').select('username,rr,avatar').eq('id',authUser.id).maybeSingle();
+  if(p){state.username=p.username;state.myRR=p.rr||0;state.myAvatar=p.avatar||null;refreshAuthUI();flushPending();}
   else{
     refreshAuthUI();
     const guess=(authUser.user_metadata&&authUser.user_metadata.username)||(authUser.email?authUser.email.split('@')[0]:'');
@@ -1297,7 +1337,7 @@ async function handleAuthSession(session){
 }
 function refreshAuthUI(){
   const b=$('profile-btn');if(!b)return;
-  if(authUser&&state.username){b.classList.add('logged');b.textContent=state.username[0].toUpperCase();b.title=state.username;}
+  if(authUser&&state.username){b.classList.add('logged');b.textContent=state.myAvatar||state.username[0].toUpperCase();b.title=state.username;}
   else{b.classList.remove('logged');b.textContent='👤';b.title='Profil / Giriş';}
   $('profile-menu').classList.remove('open');
   if($('s-landing').classList.contains('active'))renderHomeLB();
@@ -1308,7 +1348,10 @@ function onProfileClick(e){
   if(!authUser||!state.username){openAuth('login');return;}
   const m=$('profile-menu');
   if(m.classList.contains('open')){m.classList.remove('open');return;}
-  m.innerHTML=`<div class="pm-name">${esc(state.username)}<div class="pm-sub">${esc(fmtIdent(authUser))}</div></div>
+  m.innerHTML=`<div class="pm-name"><span style="font-size:21px;margin-right:7px;vertical-align:-3px">${state.myAvatar||'👤'}</span>${esc(state.username)}
+      <div class="pm-sub">${esc(fmtIdent(authUser))}</div>
+      <div style="margin-top:8px">${rankBadge(state.myRR||0)} <span class="pm-sub" style="display:inline">· ${state.myRR||0} RR</span></div></div>
+    <button onclick="openAvatarPick()" style="margin-bottom:7px">🖼 Avatar Değiştir</button>
     <button onclick="doLogout()">Çıkış Yap</button>`;
   m.classList.add('open');
 }
@@ -1341,6 +1384,114 @@ async function initAuth(){
   },0);});
   const {data:{session}}=await sb.auth.getSession();
   if(session)await handleAuthSession(session);
+}
+
+/* ============================== DERECELİ (rütbe + kuyruk) ============================== */
+const RANKS=['Demir','Bronz','Gümüş','Altın','Platin','Elmas','Yücelik','Ölümsüzlük'];
+const RANK_COLORS={Demir:'#8a9199',Bronz:'#b0793f','Gümüş':'#cdd6dd','Altın':'#ffd166',Platin:'#35c9c2',Elmas:'#d98df5','Yücelik':'#3fbf6f','Ölümsüzlük':'#c13657',Radyant:'#ffef9f'};
+function rankOf(rr){
+  rr=Math.max(0,rr|0);
+  if(rr>=2400)return{name:'Radyant',div:0,color:RANK_COLORS.Radyant,prog:100,label:'Radyant'};
+  const t=Math.floor(rr/300), d=Math.floor((rr%300)/100)+1, name=RANKS[t];
+  return{name,div:d,color:RANK_COLORS[name],prog:rr%100,label:name+' '+d};
+}
+function rankBadge(rr,big){const r=rankOf(rr);return `<span class="rk${big?' big':''}" style="--rkc:${r.color}">${r.label}</span>`;}
+let rkInt=null,rkBusy=false;
+function startRanked(){
+  if(!sb){alert('Dereceli için internet gerekli.');return;}
+  if(!authUser||!state.username){openAuth('login');toast('Dereceli oynamak için önce giriş yap.');return;}
+  $('rk-find').style.display='';$('rk-cancel').style.display='none';$('rk-status').textContent='';
+  renderRankedMe();show('s-ranked');
+}
+async function renderRankedMe(){
+  const {data:p}=await sb.from('profiles').select('rr,avatar').eq('id',authUser.id).maybeSingle();
+  if(p){state.myRR=p.rr||0;state.myAvatar=p.avatar||null;}
+  const rr=state.myRR||0,r=rankOf(rr);
+  $('rk-me').innerHTML=`<div style="font-size:46px;line-height:1">${state.myAvatar||'👤'}</div>
+    <div style="font-family:var(--cond);font-weight:700;margin-top:6px">${esc(state.username)}</div>
+    <div class="mt">${rankBadge(rr,true)}</div>
+    <div class="note" style="margin-top:7px">${rr} RR${r.name!=='Radyant'?' · sonraki kademeye '+(100-r.prog)+' RR':''}</div>
+    <div class="meter" style="max-width:260px;margin:10px auto 0"><i style="width:${r.prog}%"></i></div>`;
+}
+async function enqueueSelf(){
+  await sb.from('ranked_queue').upsert({user_id:authUser.id,username:state.username,rr:state.myRR||0,
+    enqueued_at:new Date().toISOString(),matched_code:null,matched_host:null,opp_name:null,opp_rr:null});
+}
+async function rankedSearch(){
+  $('rk-find').style.display='none';$('rk-cancel').style.display='';
+  $('rk-status').innerHTML='<b style="color:var(--teal)">⏳ Rakip aranıyor…</b> <span class="note">sekmeyi kapatma</span>';
+  try{await enqueueSelf();}catch(e){$('rk-status').textContent='Kuyruğa girilemedi — tekrar dene.';return;}
+  clearInterval(rkInt);rkInt=setInterval(rankedTick,2500);rankedTick();
+}
+async function rankedTick(){
+  if(rkBusy)return;rkBusy=true;
+  try{
+    const {data,error}=await sb.rpc('vh_ranked_tick');
+    if(error||!data)return;
+    if(data.status==='idle'){await enqueueSelf();return;}   // bayat temizlikte silinmişsek tekrar gir
+    if(data.status==='matched'){
+      clearInterval(rkInt);
+      $('rk-status').innerHTML=`✅ <b>Rakip bulundu:</b> ${esc(data.opp)} ${rankBadge(data.opp_rr||0)}`;
+      try{await sb.from('ranked_queue').delete().eq('user_id',authUser.id);}catch(e){}
+      setTimeout(()=>rankedEnter(data),1400);
+    }
+  }finally{rkBusy=false;}
+}
+async function rankedCancel(){
+  clearInterval(rkInt);
+  try{await sb.from('ranked_queue').delete().eq('user_id',authUser.id);}catch(e){}
+  $('rk-find').style.display='';$('rk-cancel').style.display='none';$('rk-status').textContent='';
+}
+function rankedBack(){rankedCancel();show('s-landing');}
+async function rankedEnter(d){
+  state._rrApplied=null;
+  if(d.host){
+    const {error}=await sb.from('rooms').insert({code:d.code,host:state.username,team_size:5,select_time:45,max_players:2,status:'lobby',ranked:true});
+    if(error){toast('Oda kurulamadı — tekrar dene.');startRanked();return;}
+    await sb.from('room_players').insert({room_code:d.code,name:state.username,is_host:true});
+    room={code:d.code,isHost:true,me:state.username,chan:null,data:null,_started:false};
+    enterLobby();
+  }else{
+    let r=null;
+    for(let i=0;i<10;i++){const q=await sb.from('rooms').select('*').eq('code',d.code).maybeSingle();r=q.data;if(r)break;await new Promise(z=>setTimeout(z,700));}
+    if(!r){toast('Rakip odayı kuramadı — tekrar dene.');startRanked();return;}
+    await sb.from('room_players').insert({room_code:d.code,name:state.username,is_host:false});
+    room={code:d.code,isHost:false,me:state.username,chan:null,data:null,_started:false};
+    enterLobby();
+  }
+}
+async function applyRankedResult(champ){
+  if(!authUser||!state.username||!sb)return;
+  const key=room.code+'_'+champ; if(state._rrApplied===key)return; state._rrApplied=key;
+  const won=champ===state.username;
+  const cm=room.data&&room.data.state&&room.data.state.currentMatch;
+  const diff=(cm&&cm.score)?Math.abs(cm.score[0]-cm.score[1]):0;
+  const delta=won?20+Math.min(10,diff):-15;
+  const {data:p}=await sb.from('profiles').select('rr').eq('id',authUser.id).maybeSingle();
+  const oldRR=(p&&p.rr)||0, newRR=Math.max(0,oldRR+delta);
+  await sb.from('profiles').update({rr:newRR}).eq('id',authUser.id);
+  state.myRR=newRR;
+  const o=rankOf(oldRR),n=rankOf(newRR);
+  let line=`${delta>0?'+':''}${delta} RR → <b>${newRR} RR</b> ${rankBadge(newRR)}`;
+  if(n.label!==o.label)line+=newRR>oldRR
+    ?' · <b style="color:var(--teal)">RÜTBE ATLADIN! '+o.label+' → '+n.label+'</b>'
+    :' · <b style="color:var(--red)">Rütbe düştü: '+o.label+' → '+n.label+'</b>';
+  const el=$('champ-rr'); if(el)el.innerHTML=line;
+  toast(won?('🏆 +'+delta+' RR'+(n.label!==o.label?' · Rütbe atladın: '+n.label+'!':'')):('−15 RR'+(n.label!==o.label?' · '+n.label:'')));
+}
+
+/* ============================== AVATAR ============================== */
+const AVATARS=['🎯','🔥','😈','🐺','🦅','👻','🤖','👑','💀','🐉','⚡','🎮','🦊','🐍','🧊','🌟'];
+function openAvatarPick(){
+  $('profile-menu').classList.remove('open');
+  $('av-grid').innerHTML=AVATARS.map(a=>`<button class="${state.myAvatar===a?'sel':''}" onclick="pickAvatar('${a}')">${a}</button>`).join('');
+  $('avatar-overlay').classList.add('open');
+}
+function closeAvatarPick(){$('avatar-overlay').classList.remove('open');}
+async function pickAvatar(a){
+  state.myAvatar=a;closeAvatarPick();refreshAuthUI();
+  if(authUser&&sb)try{await sb.from('profiles').update({avatar:a}).eq('id',authUser.id);}catch(e){}
+  toast('Avatar güncellendi '+a);
 }
 
 let lset={size:5,time:30,max:10};   // oda kapasitesi sabit (kupa); seçilmez
@@ -1393,6 +1544,12 @@ async function refreshLobby(){
   $('lobby-code').textContent=r.code; $('lobby-max').textContent=r.max_players; $('lobby-maxnote').textContent=r.max_players; $('lobby-count').textContent=list.length;
   $('lobby-players').innerHTML=list.map(p=>`<div style="padding:7px 0;border-bottom:1px solid var(--line)">${p.is_host?'👑 ':'👤 '}<b>${esc(p.name)}</b>${p.name===room.me?' <span style="color:var(--teal)">(sen)</span>':''}</div>`).join('');
   const b=$('lobby-start');
+  if(r.ranked){
+    b.style.display='none';
+    $('lobby-hint').textContent=list.length<2?'⚔️ Dereceli — rakip odaya bağlanıyor…':'⚔️ Dereceli maç başlıyor!';
+    if(room.isHost&&list.length>=2&&r.status==='lobby'&&!room._rkAuto){room._rkAuto=true;setTimeout(startRoomMatch,900);}
+    return;
+  }
   if(room.isHost){ b.style.display=''; b.disabled=list.length<2; $('lobby-hint').textContent=list.length<2?'En az 2 oyuncu bekleniyor...':'Herkes geldi, başlatabilirsin!'; }
   else { b.style.display='none'; $('lobby-hint').textContent='Host başlatmayı bekliyor...'; }
 }
@@ -1563,6 +1720,8 @@ function endPlayback(m){
 function showChampion(name){
   clearTimeout(state.timer);
   $('champ-name').textContent=name||'?';
+  $('champ-rr').innerHTML='';
+  if(room.data&&room.data.ranked)applyRankedResult(name);
   const log=(room.data&&room.data.state&&room.data.state.bracket&&room.data.state.bracket.log)||[];
   $('champ-bracket').innerHTML=log.map(l=>'<div>'+esc(l)+'</div>').join('');
   show('s-champion');
