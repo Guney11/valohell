@@ -14,7 +14,7 @@
     --line:#2a3844; --edge:rgba(255,255,255,.06);
     --txt:#ece8e1; --muted:#7d8996; --red:#ff4655; --red2:#ff5e6b; --red-deep:#c1121f;
     --teal:#18e3b3; --gold:#ffd166; --inset:#0b131a; --out:rgba(255,255,255,0.7);
-    --glow:rgba(255,70,85,.42);
+    --glow:rgba(255,70,85,.42); --cmt:#ffd166;
     --disp:'Teko',sans-serif; --cond:'Barlow Condensed','Segoe UI',sans-serif;
     --body:'Barlow','Segoe UI',system-ui,sans-serif;
   }
@@ -22,6 +22,7 @@
     --page-bg:#f2efe8; --bg2:#ffffff; --panel:#ffffff; --panel2:#f3f0e9;
     --line:#dcd7cd; --edge:rgba(0,0,0,.05); --txt:#141a20; --muted:#6b7480;
     --inset:#eeeae1; --out:rgba(0,0,0,0.5); --red-deep:#ffb3ba; --glow:rgba(255,70,85,.28);
+    --cmt:#8a6a00;   /* light temada okunur koyu amber (spiker satırı) */
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{overflow-anchor:none}   /* icerik buyuyunce sayfa kendiliginden kaymasin */
@@ -232,7 +233,8 @@
   .nw-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:18px}
   .nw-title{font-family:var(--disp);font-weight:700;font-size:28px;letter-spacing:1px;line-height:1}
   .nw-title span{color:var(--red)}
-  .nw-ver{font-family:var(--cond);font-weight:600;font-size:12px;letter-spacing:1px;color:var(--muted);text-transform:uppercase}
+  .nw-ver{font-family:var(--cond);font-weight:600;font-size:12px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;
+    position:absolute;top:20px;right:56px}   /* ✕ butonunun soluna, onunla hizalı */
   .nw-cols{display:grid;grid-template-columns:1fr 1fr;gap:28px}
   .nw-kicker{font-family:var(--cond);text-transform:uppercase;letter-spacing:2px;font-size:12px;font-weight:700;color:var(--red);margin-bottom:12px}
   .nw-item{margin-bottom:13px}
@@ -286,14 +288,14 @@
   /* ============ CANLILIK / MİKRO ANİMASYON ============ */
   .scorebar .sc.pop{animation:scpop .4s cubic-bezier(.2,1.7,.4,1)}
   @keyframes scpop{0%{transform:scale(1)}35%{transform:scale(1.22);filter:brightness(1.35)}100%{transform:scale(1);filter:none}}
-  .result-hero.win{background:radial-gradient(ellipse 62% 100% at 50% 0%,rgba(255,209,102,.13),transparent 72%)}
+  .result-hero.win{background:radial-gradient(ellipse 46% 62% at 50% 42%,rgba(255,209,102,.16),transparent 70%)}
   .result-hero.win .big{color:var(--gold);text-shadow:0 0 44px rgba(255,209,102,.55);animation:heroIn .55s cubic-bezier(.2,1.4,.4,1)}
-  .result-hero.lose{background:radial-gradient(ellipse 62% 100% at 50% 0%,rgba(96,124,160,.12),transparent 72%)}
+  .result-hero.lose{background:radial-gradient(ellipse 46% 62% at 50% 42%,rgba(96,124,160,.14),transparent 70%)}
   .result-hero.lose .big{color:#7e90a6;text-shadow:0 0 30px rgba(96,124,160,.35);animation:heroIn .55s ease}
   @keyframes heroIn{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
   #b-pickpanel.cin{animation:candIn .3s ease}
   @keyframes candIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
-  .feed .cmt{color:var(--gold);font-size:12px;font-style:italic;opacity:.9;padding:3px 0 7px}
+  .feed .cmt{color:var(--cmt);font-size:12px;font-style:italic;opacity:.9;padding:3px 0 7px}
   #r-anim{position:absolute;left:50%;top:-46px;transform:translateX(-50%);width:min(640px,98vw);height:380px;
     display:none;pointer-events:none;z-index:2}                 /* konfeti ZAFER'in üzerine yağar, tıklamayı engellemez */
   @media(max-width:560px){#r-anim{width:98vw;height:300px;top:-30px}}
@@ -335,7 +337,7 @@
     <button class="nw-close" onclick="closeNews()" aria-label="Kapat">✕</button>
     <div class="nw-head">
       <div class="nw-title">VALO<span>HELL</span></div>
-      <div class="nw-ver">Sürüm 0.4</div>
+      <div class="nw-ver" id="nw-ver"></div>
     </div>
     <div class="nw-cols">
       <section>
@@ -644,7 +646,8 @@ function toggleTheme(){const cur=localStorage.getItem('val_theme')||'dark';
 
 /* ============================== YAKINDA / GAZETE ============================== */
 const NEWS_VER='v0.6';
-function updateNewsDot(){const d=$('news-dot');if(d)d.style.display=(localStorage.getItem('val_news_seen')===NEWS_VER)?'none':'inline-block';}
+function updateNewsDot(){const d=$('news-dot');if(d)d.style.display=(localStorage.getItem('val_news_seen')===NEWS_VER)?'none':'inline-block';
+  const v=$('nw-ver');if(v)v.textContent='Sürüm '+NEWS_VER.replace('v','');}
 function openNews(){
   localStorage.setItem('val_news_seen',NEWS_VER);updateNewsDot();
   $('news-overlay').classList.add('open');document.addEventListener('keydown',newsEsc);
