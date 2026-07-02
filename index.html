@@ -370,7 +370,7 @@
         <div class="nw-kicker">Güncellemeler</div>
         <div class="nw-ver-row">v0.7</div>
         <ul class="nw-log">
-          <li><b class="tg new">Yeni</b>DERECELİ MOD — rakip bul, RR kazan, Demir 1'den Radyant'a tırman.</li>
+          <li><b class="tg new">Yeni</b>DERECELİ MOD — rakip bul, puan topla, Demir'den Radyant'a lig atla.</li>
           <li><b class="tg new">Yeni</b>Avatar seçimi ve profilde rütbe gösterimi.</li>
           <li><b class="tg imp">İyileştirme</b>Site artık tamamen HTTPS (güvenli bağlantı).</li>
         </ul>
@@ -579,7 +579,7 @@
         <button class="btn" id="rk-find" onclick="rankedSearch()">⚔️ RAKİP ARA</button>
         <button class="btn ghost" id="rk-cancel" onclick="rankedCancel()" style="display:none">Vazgeç</button>
       </div>
-      <div class="note mt" style="font-size:12px">5v5 · İki yarı · Galibiyet +20 RR (+fark bonusu) · Mağlubiyet −15 RR</div>
+      <div class="note mt" style="font-size:12px">5v5 · İki yarı · Kazan +15 puan +skor farkı · Kaybet −15 −fark · 100 puan = lig atla</div>
     </div>
   </section>
 
@@ -1387,13 +1387,13 @@ async function initAuth(){
 }
 
 /* ============================== DERECELİ (rütbe + kuyruk) ============================== */
-const RANKS=['Demir','Bronz','Gümüş','Altın','Platin','Elmas','Yücelik','Ölümsüzlük'];
+const RANKS=['Demir','Bronz','Gümüş','Altın','Platin','Elmas','Yücelik','Ölümsüzlük','Radyant'];
 const RANK_COLORS={Demir:'#8a9199',Bronz:'#b0793f','Gümüş':'#cdd6dd','Altın':'#ffd166',Platin:'#35c9c2',Elmas:'#d98df5','Yücelik':'#3fbf6f','Ölümsüzlük':'#c13657',Radyant:'#ffef9f'};
-function rankOf(rr){
+function rankOf(rr){                                   // tek kademeli lig: 100 puan = lig atla
   rr=Math.max(0,rr|0);
-  if(rr>=2400)return{name:'Radyant',div:0,color:RANK_COLORS.Radyant,prog:100,label:'Radyant'};
-  const t=Math.floor(rr/300), d=Math.floor((rr%300)/100)+1, name=RANKS[t];
-  return{name,div:d,color:RANK_COLORS[name],prog:rr%100,label:name+' '+d};
+  const idx=Math.min(8,Math.floor(rr/100)), name=RANKS[idx];
+  const pts=idx>=8?rr-800:rr-idx*100;                  // lig ici puan (Radyant birikmeye devam eder)
+  return{idx,name,label:name,color:RANK_COLORS[name],pts,prog:idx>=8?100:pts,top:idx>=8};
 }
 function rankBadge(rr,big){const r=rankOf(rr);return `<span class="rk${big?' big':''}" style="--rkc:${r.color}">${r.label}</span>`;}
 let rkInt=null,rkBusy=false;
@@ -1410,7 +1410,7 @@ async function renderRankedMe(){
   $('rk-me').innerHTML=`<div style="font-size:46px;line-height:1">${state.myAvatar||'👤'}</div>
     <div style="font-family:var(--cond);font-weight:700;margin-top:6px">${esc(state.username)}</div>
     <div class="mt">${rankBadge(rr,true)}</div>
-    <div class="note" style="margin-top:7px">${rr} RR${r.name!=='Radyant'?' · sonraki kademeye '+(100-r.prog)+' RR':''}</div>
+    <div class="note" style="margin-top:7px">${r.top?('🏆 Zirve lig! · '+r.pts+' puan'):(r.pts+' / 100 puan · sonraki lige '+(100-r.pts)+' puan')}</div>
     <div class="meter" style="max-width:260px;margin:10px auto 0"><i style="width:${r.prog}%"></i></div>`;
 }
 async function enqueueSelf(){
@@ -1466,18 +1466,18 @@ async function applyRankedResult(champ){
   const won=champ===state.username;
   const cm=room.data&&room.data.state&&room.data.state.currentMatch;
   const diff=(cm&&cm.score)?Math.abs(cm.score[0]-cm.score[1]):0;
-  const delta=won?20+Math.min(10,diff):-15;
+  const delta=won?(15+diff):-(15+diff);              // ezici galibiyet cok kazandirir, ezici yenilgi cok kaybettirir
   const {data:p}=await sb.from('profiles').select('rr').eq('id',authUser.id).maybeSingle();
   const oldRR=(p&&p.rr)||0, newRR=Math.max(0,oldRR+delta);
   await sb.from('profiles').update({rr:newRR}).eq('id',authUser.id);
   state.myRR=newRR;
-  const o=rankOf(oldRR),n=rankOf(newRR);
-  let line=`${delta>0?'+':''}${delta} RR → <b>${newRR} RR</b> ${rankBadge(newRR)}`;
-  if(n.label!==o.label)line+=newRR>oldRR
-    ?' · <b style="color:var(--teal)">RÜTBE ATLADIN! '+o.label+' → '+n.label+'</b>'
-    :' · <b style="color:var(--red)">Rütbe düştü: '+o.label+' → '+n.label+'</b>';
+  const o=rankOf(oldRR),n=rankOf(newRR),ds=(delta>0?'+':'')+delta+' puan';
+  let line;
+  if(n.idx>o.idx)      line=`🎉 <b style="color:var(--teal)">TEBRİKLER, LİG ATLADIN!</b><br>Yeni ligin: ${rankBadge(newRR,true)} <span class="note">(${ds})</span>`;
+  else if(n.idx<o.idx) line=`🔻 <b style="color:var(--red)">Lig düştün.</b><br>Yeni ligin: ${rankBadge(newRR,true)} <span class="note">(${ds})</span>`;
+  else                 line=`${ds} → ${rankBadge(newRR)} <span class="note">· ${n.top?n.pts+' puan':n.pts+'/100'}</span>`;
   const el=$('champ-rr'); if(el)el.innerHTML=line;
-  toast(won?('🏆 +'+delta+' RR'+(n.label!==o.label?' · Rütbe atladın: '+n.label+'!':'')):('−15 RR'+(n.label!==o.label?' · '+n.label:'')));
+  toast(won?('🏆 '+ds+(n.idx>o.idx?' · Lig atladın: '+n.name+'!':'')):(ds+(n.idx<o.idx?' · Lig düştün: '+n.name:'')));
 }
 
 /* ============================== AVATAR ============================== */
